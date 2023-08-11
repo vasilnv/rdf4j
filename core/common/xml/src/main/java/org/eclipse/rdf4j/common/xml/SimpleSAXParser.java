@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.xml;
@@ -40,7 +43,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * &lt;/xml-doc&gt;
  * </pre>
  * <p>
- * will result in the following method calls to the <tt>SimpleSAXListener</tt>:
+ * will result in the following method calls to the <var>SimpleSAXListener</var>:
  *
  * <pre>
  * startDocument()
@@ -64,7 +67,7 @@ public class SimpleSAXParser {
 	/**
 	 * The XMLReader to use for parsing the XML.
 	 */
-	private XMLReader xmlReader;
+	private final XMLReader xmlReader;
 
 	/**
 	 * The listener to report the events to.
@@ -86,8 +89,8 @@ public class SimpleSAXParser {
 	 *--------------*/
 
 	/**
-	 * Creates a new SimpleSAXParser that will use the supplied <tt>XMLReader</tt> for parsing the XML. One must set a
-	 * <tt>SimpleSAXListener</tt> on this object before calling one of the <tt>parse()</tt> methods.
+	 * Creates a new SimpleSAXParser that will use the supplied <var>XMLReader</var> for parsing the XML. One must set a
+	 * <var>SimpleSAXListener</var> on this object before calling one of the <var>parse()</var> methods.
 	 *
 	 * @param xmlReader The XMLReader to use for parsing.
 	 * @see #setListener
@@ -98,9 +101,9 @@ public class SimpleSAXParser {
 	}
 
 	/**
-	 * Creates a new SimpleSAXParser that will try to create a new <tt>XMLReader</tt> using
-	 * <tt>info.aduna.xml.XMLReaderFactory</tt> for parsing the XML. One must set a <tt>SimpleSAXListener</tt> on this
-	 * object before calling one of the <tt>parse()</tt> methods.
+	 * Creates a new SimpleSAXParser that will try to create a new <var>XMLReader</var> using
+	 * <var>info.aduna.xml.XMLReaderFactory</var> for parsing the XML. One must set a <var>SimpleSAXListener</var> on
+	 * this object before calling one of the <var>parse()</var> methods.
 	 *
 	 * @throws SAXException If the SimpleSAXParser was unable to create an XMLReader.
 	 * @see #setListener
@@ -148,51 +151,45 @@ public class SimpleSAXParser {
 
 	/**
 	 * Checks whether leading and trailing whitespace characters in text elements are preserved. Defaults to
-	 * <tt>false</tt>.
+	 * <var>false</var>.
 	 */
 	public boolean isPreserveWhitespace() {
 		return preserveWhitespace;
 	}
 
 	/**
-	 * Parses the content of the supplied <tt>File</tt> as XML.
+	 * Parses the content of the supplied <var>File</var> as XML.
 	 *
 	 * @param file The file containing the XML to parse.
 	 */
 	public void parse(File file) throws SAXException, IOException {
-		InputStream in = new FileInputStream(file);
-		try {
+		try (InputStream in = new FileInputStream(file)) {
 			parse(in);
-		} finally {
-			try {
-				in.close();
-			} catch (IOException ignore) {
-			}
 		}
 	}
 
 	/**
-	 * Parses the content of the supplied <tt>InputStream</tt> as XML.
+	 * Parses the content of the supplied <var>InputStream</var> as XML.
 	 *
-	 * @param in An <tt>InputStream</tt> containing XML data.
+	 * @param in An <var>InputStream</var> containing XML data.
 	 */
 	public void parse(InputStream in) throws SAXException, IOException {
 		parse(new InputSource(in));
 	}
 
 	/**
-	 * Parses the content of the supplied <tt>Reader</tt> as XML.
+	 * Parses the content of the supplied <var>Reader</var> as XML.
 	 *
-	 * @param reader A <tt>Reader</tt> containing XML data.
+	 * @param reader A <var>Reader</var> containing XML data.
 	 */
 	public void parse(Reader reader) throws SAXException, IOException {
 		parse(new InputSource(reader));
 	}
 
 	/**
-	 * Parses the content of the supplied <tt>InputSource</tt> as XML.
+	 * Parses the content of the supplied <var>InputSource</var> as XML.
 	 *
-	 * @param inputSource An <tt>InputSource</tt> containing XML data.
+	 * @param inputSource An <var>InputSource</var> containing XML data.
 	 */
 	public synchronized void parse(InputSource inputSource) throws SAXException, IOException {
 		xmlReader.setContentHandler(new SimpleSAXDefaultHandler());
@@ -210,7 +207,7 @@ public class SimpleSAXParser {
 		/**
 		 * StringBuilder used to collect text during parsing.
 		 */
-		private StringBuilder charBuf = new StringBuilder(512);
+		private final StringBuilder charBuf = new StringBuilder(512);
 
 		/**
 		 * The tag name of a deferred start tag.

@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration;
@@ -18,6 +21,7 @@ import java.util.List;
  * An Iteration that returns the bag union of the results of a number of Iterations. 'Bag union' means that the
  * UnionIteration does not filter duplicate objects.
  */
+@Deprecated(since = "4.1.0")
 public class UnionIteration<E, X extends Exception> extends LookAheadIteration<E, X> {
 
 	/*-----------*
@@ -26,7 +30,7 @@ public class UnionIteration<E, X extends Exception> extends LookAheadIteration<E
 
 	private final Iterator<? extends Iteration<? extends E, X>> argIter;
 
-	private volatile Iteration<? extends E, X> currentIter;
+	private Iteration<? extends E, X> currentIter;
 
 	/*--------------*
 	 * Constructors *
@@ -37,6 +41,7 @@ public class UnionIteration<E, X extends Exception> extends LookAheadIteration<E
 	 *
 	 * @param args The Iterations containing the elements to iterate over.
 	 */
+	@SafeVarargs
 	public UnionIteration(Iteration<? extends E, X>... args) {
 		this(Arrays.asList(args));
 	}
@@ -73,13 +78,11 @@ public class UnionIteration<E, X extends Exception> extends LookAheadIteration<E
 			// Current Iteration exhausted, continue with the next one
 			Iterations.closeCloseable(nextCurrentIter);
 
-			synchronized (this) {
-				if (argIter.hasNext()) {
-					currentIter = argIter.next();
-				} else {
-					// All elements have been returned
-					return null;
-				}
+			if (argIter.hasNext()) {
+				currentIter = argIter.next();
+			} else {
+				// All elements have been returned
+				return null;
 			}
 		}
 	}
@@ -93,13 +96,14 @@ public class UnionIteration<E, X extends Exception> extends LookAheadIteration<E
 		} finally {
 			try {
 				List<Throwable> collectedExceptions = new ArrayList<>();
-				synchronized (this) {
-					while (argIter.hasNext()) {
-						try {
-							Iterations.closeCloseable(argIter.next());
-						} catch (Throwable e) {
-							collectedExceptions.add(e);
+				while (argIter.hasNext()) {
+					try {
+						Iterations.closeCloseable(argIter.next());
+					} catch (Throwable e) {
+						if (e instanceof InterruptedException) {
+							Thread.currentThread().interrupt();
 						}
+						collectedExceptions.add(e);
 					}
 				}
 				if (!collectedExceptions.isEmpty()) {

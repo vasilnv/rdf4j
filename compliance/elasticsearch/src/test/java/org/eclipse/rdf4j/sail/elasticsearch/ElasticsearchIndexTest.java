@@ -1,14 +1,16 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.sail.elasticsearch;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -115,12 +117,12 @@ public class ElasticsearchIndexTest extends ESIntegTestCase {
 
 	@Override
 	protected Collection<Class<? extends Plugin>> transportClientPlugins() {
-		return Arrays.asList(ReindexPlugin.class);
+		return List.of(ReindexPlugin.class);
 	}
 
 	@Override
 	protected Collection<Class<? extends Plugin>> nodePlugins() {
-		return Arrays.asList(ReindexPlugin.class);
+		return List.of(ReindexPlugin.class);
 	}
 
 	@After
@@ -131,6 +133,9 @@ public class ElasticsearchIndexTest extends ESIntegTestCase {
 		} finally {
 			super.tearDown();
 		}
+
+		org.eclipse.rdf4j.common.concurrent.locks.Properties.setLockTrackingEnabled(false);
+
 	}
 
 	@Test
@@ -351,11 +356,10 @@ public class ElasticsearchIndexTest extends ESIntegTestCase {
 
 		// create a Repository wrapping the LuceneSail
 		SailRepository repository = new SailRepository(sail);
-		repository.initialize();
 
 		// now add the statements through the repo
 		// add statements with context
-		try (SailRepositoryConnection connection = repository.getConnection();) {
+		try (SailRepositoryConnection connection = repository.getConnection()) {
 			connection.begin();
 			connection.add(statementContext111, statementContext111.getContext());
 			connection.add(statementContext121, statementContext121.getContext());
@@ -403,11 +407,10 @@ public class ElasticsearchIndexTest extends ESIntegTestCase {
 
 		// create a Repository wrapping the LuceneSail
 		SailRepository repository = new SailRepository(sail);
-		repository.initialize();
 
 		// now add the statements through the repo
 		// add statements with context
-		try (SailRepositoryConnection connection = repository.getConnection();) {
+		try (SailRepositoryConnection connection = repository.getConnection()) {
 			connection.begin();
 			connection.add(statementContext111, statementContext111.getContext());
 			connection.add(statementContext121, statementContext121.getContext());

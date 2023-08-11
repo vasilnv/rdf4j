@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.io;
@@ -22,7 +25,7 @@ import java.util.zip.ZipFile;
 public class ZipUtil {
 
 	/**
-	 * Magic number for ZIP files (4 bytes: <tt>0x04034b50</tt>).
+	 * Magic number for ZIP files (4 bytes: <var>0x04034b50</var>).
 	 */
 	private final static byte MAGIC_NUMBER[] = { (byte) 0x50, (byte) 0x4B, (byte) 0x03, (byte) 0x04 };
 

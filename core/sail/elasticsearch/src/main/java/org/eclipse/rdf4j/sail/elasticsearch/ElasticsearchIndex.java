@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.sail.elasticsearch;
 
@@ -29,9 +32,9 @@ import org.eclipse.rdf4j.sail.lucene.DocumentDistance;
 import org.eclipse.rdf4j.sail.lucene.DocumentResult;
 import org.eclipse.rdf4j.sail.lucene.DocumentScore;
 import org.eclipse.rdf4j.sail.lucene.LuceneSail;
+import org.eclipse.rdf4j.sail.lucene.QuerySpec;
 import org.eclipse.rdf4j.sail.lucene.SearchDocument;
 import org.eclipse.rdf4j.sail.lucene.SearchFields;
-import org.eclipse.rdf4j.sail.lucene.SearchQuery;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequestBuilder;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
@@ -84,6 +87,13 @@ import com.google.common.collect.Iterables;
 
 /**
  * Requires an Elasticsearch cluster with the DeleteByQuery plugin.
+ *
+ * Note that, while RDF4J is licensed under the EDL, several ElasticSearch dependencies are licensed under the Elastic
+ * license or the SSPL, which may have implications for some projects.
+ *
+ * Please consult the ElasticSearch website and license FAQ for more information.
+ *
+ * @see <a href="https://www.elastic.co/licensing/elastic-license/faq">Elastic License FAQ</a>
  *
  * @see LuceneSail
  */
@@ -171,7 +181,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 	private String analyzer;
 
-	private String queryAnalyzer = "standard";
+	private String queryAnalyzer = DEFAULT_ANALYZER;
 
 	private Function<? super String, ? extends SpatialContext> geoContextMapper;
 
@@ -197,6 +207,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
 		analyzer = parameters.getProperty(LuceneSail.ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
+		queryAnalyzer = parameters.getProperty(LuceneSail.QUERY_ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
 		// slightly hacky cast to cope with the fact that Properties is
 		// Map<Object,Object>
 		// even though it is effectively Map<String,String>
@@ -398,7 +409,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	@Override
 	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
 		SearchHits hits = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
-		return Iterables.transform(hits, new Function<SearchHit, SearchDocument>() {
+		return Iterables.transform(hits, new Function<>() {
 
 			@Override
 			public SearchDocument apply(SearchHit hit) {
@@ -520,44 +531,28 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	public void rollback() throws IOException {
 	}
 
-	@Override
-	public void beginReading() throws IOException {
-	}
-
-	@Override
-	public void endReading() throws IOException {
-	}
-
 	// //////////////////////////////// Methods for querying the index
-
-	/**
-	 * Parse the passed query. To be removed, no longer used.
-	 *
-	 * @param query string
-	 * @return the parsed query
-	 * @throws ParseException when the parsing brakes
-	 */
-	@Override
-	@Deprecated
-	protected SearchQuery parseQuery(String query, IRI propertyURI) throws MalformedQueryException {
-		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
-		return new ElasticsearchQuery(client.prepareSearch(), qb, this);
-	}
 
 	/**
 	 * Parse the passed query.
 	 *
 	 * @param subject
-	 * @param query       string
-	 * @param propertyURI
-	 * @param highlight
+	 * @param spec    query to process
 	 * @return the parsed query
-	 * @throws ParseException when the parsing brakes
+	 * @throws MalformedQueryException
 	 * @throws IOException
+	 * @throws IllegalArgumentException if the spec contains a multi-param query
 	 */
 	@Override
-	protected Iterable<? extends DocumentScore> query(Resource subject, String query, IRI propertyURI,
-			boolean highlight) throws MalformedQueryException, IOException {
+	protected Iterable<? extends DocumentScore> query(Resource subject, QuerySpec spec)
+			throws MalformedQueryException, IOException {
+		if (spec.getQueryPatterns().size() != 1) {
+			throw new IllegalArgumentException("Multi-param query not implemented!");
+		}
+		QuerySpec.QueryParam param = spec.getQueryPatterns().iterator().next();
+		IRI propertyURI = param.getProperty();
+		boolean highlight = param.isHighlight();
+		String query = param.getQuery();
 		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
 		SearchRequestBuilder request = client.prepareSearch();
 		if (highlight) {
@@ -587,7 +582,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		} else {
 			hits = search(request, qb);
 		}
-		return Iterables.transform(hits, new Function<SearchHit, DocumentScore>() {
+		return Iterables.transform(hits, new Function<>() {
 
 			@Override
 			public DocumentScore apply(SearchHit hit) {
@@ -595,22 +590,6 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 			}
 		});
 	}
-
-	// /**
-	// * Parses an id-string used for a context filed (a serialized resource)
-	// back to a resource.
-	// * <b>CAN RETURN NULL</b>
-	// * Inverse method of {@link #getResourceID(Resource)}
-	// * @param idString
-	// * @return null if the passed idString was the {@link #CONTEXT_NULL}
-	// constant
-	// */
-	// private Resource getContextResource(String idString) {
-	// if (CONTEXT_NULL.equals(idString))
-	// return null;
-	// else
-	// return getResource(idString);
-	// }
 
 	/**
 	 * Evaluates the given query only for the given resource.
@@ -707,7 +686,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 		SearchRequestBuilder request = client.prepareSearch();
 		SearchHits hits = search(request, QueryBuilders.boolQuery().must(qb).filter(fb));
-		return Iterables.transform(hits, new Function<SearchHit, DocumentResult>() {
+		return Iterables.transform(hits, new Function<>() {
 
 			@Override
 			public DocumentResult apply(SearchHit hit) {
@@ -779,88 +758,21 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 */
 	@Override
 	public synchronized void clearContexts(Resource... contexts) throws IOException {
-
-		// logger.warn("Clearing contexts operation did not change the index: contexts are not indexed at the moment");
-
 		logger.debug("deleting contexts: {}", Arrays.toString(contexts));
 		// these resources have to be read from the underlying rdf store
 		// and their triples have to be added to the luceneindex after deletion of
 		// documents
-		// HashSet<Resource> resourcesToUpdate = new HashSet<Resource>();
 
 		// remove all contexts passed
 		for (Resource context : contexts) {
 			// attention: context can be NULL!
 			String contextString = SearchFields.getContextID(context);
-			// IndexReader reader = getIndexReader();
-
-			// now check all documents, and remember the URI of the resources
-			// that were in multiple contexts
-			// TermDocs termDocs = reader.termDocs(contextTerm);
-			// try {
-			// while (termDocs.next()) {
-			// Document document = readDocument(reader, termDocs.doc());
-			// // does this document have any other contexts?
-			// Field[] fields = document.getFields(CONTEXT_FIELD_NAME);
-			// for (Field f : fields)
-			// {
-			// if
-			// (!contextString.equals(f.stringValue())&&!f.stringValue().equals("null"))
-			// // there is another context
-			// {
-			// logger.debug("test new contexts: {}", f.stringValue());
-			// // is it in the also contexts (lucky us if it is)
-			// Resource otherContextOfDocument =
-			// getContextResource(f.stringValue()); // can return null
-			// boolean isAlsoDeleted = false;
-			// for (Resource c: contexts){
-			// if (c==null) {
-			// if (otherContextOfDocument == null)
-			// isAlsoDeleted = true;
-			// } else
-			// if (c.equals(otherContextOfDocument))
-			// isAlsoDeleted = true;
-			// }
-			// // the otherContextOfDocument is now eihter marked for deletion or
-			// not
-			// if (!isAlsoDeleted) {
-			// // get ID of document
-			// Resource r = getResource(document);
-			// resourcesToUpdate.add(r);
-			// }
-			// }
-			// }
-			// }
-			// } finally {
-			// termDocs.close();
-			// }
-
 			// now delete all documents from the deleted context
 			new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE)
 					.source(indexName)
 					.filter(QueryBuilders.termQuery(SearchFields.CONTEXT_FIELD_NAME, contextString))
 					.get();
 		}
-
-		// now add those again, that had other contexts also.
-		// SailConnection con = sail.getConnection();
-		// try {
-		// // for each resource, add all
-		// for (Resource resource : resourcesToUpdate) {
-		// logger.debug("re-adding resource {}", resource);
-		// ArrayList<Statement> toAdd = new ArrayList<Statement>();
-		// CloseableIteration<? extends Statement, SailException> it =
-		// con.getStatements(resource, null, null, false);
-		// while (it.hasNext()) {
-		// Statement s = it.next();
-		// toAdd.add(s);
-		// }
-		// addDocument(resource, toAdd);
-		// }
-		// } finally {
-		// con.close();
-		// }
-
 	}
 
 	/**

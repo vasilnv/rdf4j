@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.query.explanation;
 
@@ -11,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -20,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * This is an experimental feature. The interface may be changed, moved or potentially removed in a future release.
- *
+ * <p>
  * The interface is used to implement query explanations (query plan)
  *
  * @since 3.2.0
@@ -30,8 +35,15 @@ public class GenericPlanNode {
 
 	public static final String UNKNOWN = "UNKNOWN";
 
-	private final String UUID = "UUID_" + java.util.UUID.randomUUID().toString().replace("-", "");
+	// static UUID as prefix together with a thread safe incrementing long ensures a unique identifier.
+	private final static String uniqueIdPrefix = UUID.randomUUID().toString().replace("-", "");
+	private final static AtomicLong uniqueIdSuffix = new AtomicLong();
+
+	private static final String spoc[] = { "s", "p", "o", "c" };
+
 	private final static String newLine = System.getProperty("line.separator");
+
+	private final String id = "UUID_" + uniqueIdPrefix + uniqueIdSuffix.incrementAndGet();
 
 	// The name of the node, eg. "Join" or "Join (HashJoinIteration)".
 	private String type;
@@ -94,7 +106,7 @@ public class GenericPlanNode {
 	 * The cost estimate that the query planner calculated for this node. Value has no meaning outside of this
 	 * explanation and is only used to compare and order the nodes in the query plan.
 	 *
-	 * @return
+	 * @return a cost estimate as a double value
 	 */
 	public Double getCostEstimate() {
 		return costEstimate;
@@ -109,7 +121,7 @@ public class GenericPlanNode {
 	/**
 	 * The number of results that this node was estimated to produce.
 	 *
-	 * @return
+	 * @return result size estimate
 	 */
 	public Double getResultSizeEstimate() {
 		return resultSizeEstimate;
@@ -124,7 +136,7 @@ public class GenericPlanNode {
 	/**
 	 * The actual number of results that this node produced while the query was executed.
 	 *
-	 * @return
+	 * @return number of results that this query produced
 	 */
 	public Long getResultSizeActual() {
 		return resultSizeActual;
@@ -139,7 +151,7 @@ public class GenericPlanNode {
 	/**
 	 * The total time in milliseconds that this node-tree (all children and so on) used while the query was executed.
 	 *
-	 * @return
+	 * @return time in milliseconds that was used to execute the query
 	 */
 	public Double getTotalTimeActual() {
 		// Not all nodes have their own totalTimeActual, but it can easily be calculated by looking that the child plans
@@ -174,8 +186,6 @@ public class GenericPlanNode {
 
 	/**
 	 * The time that this node used by itself (eg. totalTimeActual - sum of plans[0..n].totalTimeActual)
-	 *
-	 * @return
 	 */
 	public Double getSelfTimeActual() {
 
@@ -195,7 +205,6 @@ public class GenericPlanNode {
 	}
 
 	/**
-	 *
 	 * @return true if this node introduces a new scope
 	 */
 	public Boolean isNewScope() {
@@ -223,12 +232,12 @@ public class GenericPlanNode {
 		this.algorithm = algorithm;
 	}
 
-	private static int prettyBoxDrawingType = 0;
+	private static final int prettyBoxDrawingType = 0;
 
 	/**
 	 * Human readable string. Do not attempt to parse this.
 	 *
-	 * @return
+	 * @return an unparsable string
 	 */
 	@Override
 	public String toString() {
@@ -236,7 +245,6 @@ public class GenericPlanNode {
 	}
 
 	/**
-	 *
 	 * @param prettyBoxDrawingType for deciding if we should use single or double walled character for drawing the
 	 *                             connectors between nodes in the query plan. Eg. ├ or ╠ and ─ o
 	 * @return
@@ -286,9 +294,14 @@ public class GenericPlanNode {
 
 			String left = plans.get(0).getHumanReadable(prettyBoxDrawingType + 1);
 			String right = plans.get(1).getHumanReadable(prettyBoxDrawingType + 1);
+			boolean join = type.contains("Join");
+
 			{
 				String[] split = left.split(newLine);
-				sb.append(start).append(horizontal).append(split[0]).append(newLine);
+				sb.append(start).append(horizontal).append(" ").append(split[0]);
+				if (join)
+					sb.append(" [left]");
+				sb.append(newLine);
 				for (int i = 1; i < split.length; i++) {
 					sb.append(vertical).append("  ").append(split[i]).append(newLine);
 				}
@@ -296,25 +309,38 @@ public class GenericPlanNode {
 
 			{
 				String[] split = right.split(newLine);
-				sb.append(end).append(horizontal).append(split[0]).append(newLine);
+				sb.append(end).append(horizontal).append(" ").append(split[0]);
+				if (join)
+					sb.append(" [right]");
+				sb.append(newLine);
+
 				for (int i = 1; i < split.length; i++) {
 					sb.append("   ").append(split[i]).append(newLine);
 				}
 			}
 
 		} else {
-			plans.forEach(
-					child -> sb.append(Arrays.stream(child.getHumanReadable(prettyBoxDrawingType + 1).split(newLine))
-							.map(c -> "   " + c)
-							.reduce((a, b) -> a + newLine + b)
-							.orElse("") + newLine));
+
+			for (int i = 0; i < plans.size(); i++) {
+				GenericPlanNode child = plans.get(i);
+				int j = i;
+				sb.append(Arrays.stream(child.getHumanReadable(prettyBoxDrawingType + 1).split(newLine))
+						.map(c -> {
+							if (type.startsWith("StatementPattern") && child.type.startsWith("Var")) {
+								return spoc[j] + ": " + c;
+							}
+							return c;
+						})
+						.map(c -> "   " + c)
+						.reduce((a, b) -> a + newLine + b)
+						.orElse("")).append(newLine);
+			}
 		}
 
 		return sb.toString();
 	}
 
 	/**
-	 *
 	 * @return Human readable number. Eg. 12.1M for 1212213.4 and UNKNOWN for -1.
 	 */
 	static private String toHumanReadableNumber(Double number) {
@@ -337,7 +363,6 @@ public class GenericPlanNode {
 	}
 
 	/**
-	 *
 	 * @return Human readable number. Eg. 12.1M for 1212213.4 and UNKNOWN for -1.
 	 */
 	static private String toHumanReadableNumber(Long number) {
@@ -360,7 +385,6 @@ public class GenericPlanNode {
 	}
 
 	/**
-	 *
 	 * @return Human readable time.
 	 */
 	static private String toHumanReadableTime(Double millis) {
@@ -428,7 +452,7 @@ public class GenericPlanNode {
 
 		if (newScope != null && newScope) {
 			sb.append("subgraph cluster_")
-					.append(getUUID())
+					.append(getID())
 					.append(" {")
 					.append(newLine)
 					.append("   color=grey")
@@ -440,7 +464,7 @@ public class GenericPlanNode {
 		String selfTimeColor = getProportionalRedColor(maxSelfTime, getSelfTimeActual());
 
 		sb
-				.append(getUUID())
+				.append(getID())
 				.append(" [label=")
 				.append("<<table BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"3\" >");
 
@@ -474,9 +498,9 @@ public class GenericPlanNode {
 			}
 
 			sb.append("   ")
-					.append(getUUID())
+					.append(getID())
 					.append(" -> ")
-					.append(p.getUUID())
+					.append(p.getID())
 					.append(" [label=\"")
 					.append(linkLabel)
 					.append("\"]")
@@ -511,7 +535,7 @@ public class GenericPlanNode {
 	}
 
 	@JsonIgnore
-	public String getUUID() {
-		return UUID;
+	public String getID() {
+		return id;
 	}
 }

@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration;
@@ -14,15 +17,16 @@ import java.util.NoSuchElementException;
  * An iteration that delays the creation of the underlying iteration until it is being accessed. This is mainly useful
  * for situations where iteration creation adds considerable overhead but where the iteration may not actually be used,
  * or where a created iteration consumes scarce resources like JDBC-connections or memory. Subclasses must implement the
- * <tt>createIteration</tt> method, which is called once when the iteration is first needed.
+ * <var>createIteration</var> method, which is called once when the iteration is first needed.
  */
+@Deprecated(since = "4.1.0")
 public abstract class DelayedIteration<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	private volatile Iteration<? extends E, ? extends X> iter;
+	private Iteration<? extends E, ? extends X> iter;
 
 	/*--------------*
 	 * Constructors *
@@ -46,7 +50,7 @@ public abstract class DelayedIteration<E, X extends Exception> extends AbstractC
 	protected abstract Iteration<? extends E, ? extends X> createIteration() throws X;
 
 	/**
-	 * Calls the <tt>hasNext</tt> method of the underlying iteration.
+	 * Calls the <var>hasNext</var> method of the underlying iteration.
 	 */
 	@Override
 	public boolean hasNext() throws X {
@@ -56,11 +60,9 @@ public abstract class DelayedIteration<E, X extends Exception> extends AbstractC
 		Iteration<? extends E, ? extends X> resultIter = iter;
 		if (resultIter == null) {
 			// Underlying iterator has not yet been initialized
-			synchronized (this) {
-				resultIter = iter;
-				if (resultIter == null) {
-					resultIter = iter = createIteration();
-				}
+			resultIter = iter;
+			if (resultIter == null) {
+				resultIter = iter = createIteration();
 			}
 		}
 
@@ -68,7 +70,7 @@ public abstract class DelayedIteration<E, X extends Exception> extends AbstractC
 	}
 
 	/**
-	 * Calls the <tt>next</tt> method of the underlying iteration.
+	 * Calls the <var>next</var> method of the underlying iteration.
 	 */
 	@Override
 	public E next() throws X {
@@ -78,11 +80,9 @@ public abstract class DelayedIteration<E, X extends Exception> extends AbstractC
 		Iteration<? extends E, ? extends X> resultIter = iter;
 		if (resultIter == null) {
 			// Underlying iterator has not yet been initialized
-			synchronized (this) {
-				resultIter = iter;
-				if (resultIter == null) {
-					resultIter = iter = createIteration();
-				}
+			resultIter = iter;
+			if (resultIter == null) {
+				resultIter = iter = createIteration();
 			}
 		}
 
@@ -90,7 +90,7 @@ public abstract class DelayedIteration<E, X extends Exception> extends AbstractC
 	}
 
 	/**
-	 * Calls the <tt>remove</tt> method of the underlying iteration.
+	 * Calls the <var>remove</var> method of the underlying iteration.
 	 */
 	@Override
 	public void remove() throws X {

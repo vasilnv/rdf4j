@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.xml;
@@ -15,8 +18,8 @@ public class XMLUtil {
 
 	/**
 	 * Escapes any special characters in the supplied text so that it can be included as character data in an XML
-	 * document. The characters that are escaped are <tt>&amp;</tt>, <tt>&lt;</tt>, <tt>&gt;</tt> and <tt>carriage
-	 * return (\r)</tt>.
+	 * document. The characters that are escaped are <var>&amp;</var>, <var>&lt;</var>, <var>&gt;</var> and
+	 * <var>carriage return (\r)</var>.
 	 */
 	public static String escapeCharacterData(String text) {
 		text = text.replace("&", "&amp;");
@@ -28,8 +31,8 @@ public class XMLUtil {
 
 	/**
 	 * Escapes any special characters in the supplied value so that it can be used as an double-quoted attribute value
-	 * in an XML document. The characters that are escaped are <tt>&amp;</tt>, <tt>&lt;</tt>, <tt>&gt;</tt>,
-	 * <tt>tab (\t)</tt>, <tt>carriage return (\r)</tt>, <tt>line feed (\n)</tt> and <tt>"</tt> .
+	 * in an XML document. The characters that are escaped are <var>&amp;</var>, <var>&lt;</var>, <var>&gt;</var>,
+	 * <var>tab (\t)</var>, <var>carriage return (\r)</var>, <var>line feed (\n)</var> and <var>"</var> .
 	 */
 	public static String escapeDoubleQuotedAttValue(String value) {
 		value = _escapeAttValue(value);
@@ -39,8 +42,8 @@ public class XMLUtil {
 
 	/**
 	 * Escapes any special characters in the supplied value so that it can be used as an single-quoted attribute value
-	 * in an XML document. The characters that are escaped are <tt>&amp;</tt>, <tt>&lt;</tt>, <tt>&gt;</tt>,
-	 * <tt>tab (\t)</tt>, <tt>carriage return (\r)</tt>, <tt>line feed (\n)</tt> and <tt>'</tt> .
+	 * in an XML document. The characters that are escaped are <var>&amp;</var>, <var>&lt;</var>, <var>&gt;</var>,
+	 * <var>tab (\t)</var>, <var>carriage return (\r)</var>, <var>line feed (\n)</var> and <var>'</var> .
 	 */
 	public static String escapeSingleQuotedAttValue(String value) {
 		value = _escapeAttValue(value);
@@ -126,7 +129,7 @@ public class XMLUtil {
 	 * followed by zero or more 'NCName' characters.
 	 *
 	 * @param uri The URI to split.
-	 * @return The index of the first character of the local name, or <tt>-1</tt> if the URI can not be split into a
+	 * @return The index of the first character of the local name, or <var>-1</var> if the URI can not be split into a
 	 *         namespace and local name.
 	 */
 	public static int findURISplitIndex(String uri) {
@@ -292,11 +295,11 @@ public class XMLUtil {
 		return _isAsciiBaseChar(c) || _isNonAsciiBaseChar(c) || isIdeographic(c);
 	}
 
-	private static final boolean _isAsciiBaseChar(char c) {
+	private static boolean _isAsciiBaseChar(char c) {
 		return _charInRange(c, 0x0041, 0x005A) || _charInRange(c, 0x0061, 0x007A);
 	}
 
-	private static final boolean _isNonAsciiBaseChar(char c) {
+	private static boolean _isNonAsciiBaseChar(char c) {
 		return _charInRange(c, 0x00C0, 0x00D6) || _charInRange(c, 0x00D8, 0x00F6) || _charInRange(c, 0x00F8, 0x00FF)
 				|| _charInRange(c, 0x0100, 0x0131) || _charInRange(c, 0x0134, 0x013E) || _charInRange(c, 0x0141, 0x0148)
 				|| _charInRange(c, 0x014A, 0x017E) || _charInRange(c, 0x0180, 0x01C3) || _charInRange(c, 0x01CD, 0x01F0)
@@ -400,11 +403,11 @@ public class XMLUtil {
 		return _isAsciiDigit(c) || _isNonAsciiDigit(c);
 	}
 
-	private static final boolean _isAsciiDigit(char c) {
+	private static boolean _isAsciiDigit(char c) {
 		return _charInRange(c, 0x0030, 0x0039);
 	}
 
-	private static final boolean _isNonAsciiDigit(char c) {
+	private static boolean _isNonAsciiDigit(char c) {
 		return _charInRange(c, 0x0660, 0x0669) || _charInRange(c, 0x06F0, 0x06F9) || _charInRange(c, 0x0966, 0x096F)
 				|| _charInRange(c, 0x09E6, 0x09EF) || _charInRange(c, 0x0A66, 0x0A6F) || _charInRange(c, 0x0AE6, 0x0AEF)
 				|| _charInRange(c, 0x0B66, 0x0B6F) || _charInRange(c, 0x0BE7, 0x0BEF) || _charInRange(c, 0x0C66, 0x0C6F)
@@ -418,7 +421,7 @@ public class XMLUtil {
 				|| _charInRange(c, 0x30FC, 0x30FE);
 	}
 
-	private static final boolean _charInRange(char c, int start, int end) {
+	private static boolean _charInRange(char c, int start, int end) {
 		return c >= start && c <= end;
 	}
 }

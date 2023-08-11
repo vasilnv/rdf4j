@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iterator;
@@ -19,7 +22,10 @@ import java.util.List;
 /**
  * This class consists exclusively of static methods that operate on or return iterators. It is the Iterator-equivalent
  * of {@link Collections}.
+ *
+ * @deprecated use Commons Collections or Guava instead.
  */
+@Deprecated(since = "4.1.0", forRemoval = true)
 public class Iterators {
 
 	/**
@@ -39,7 +45,7 @@ public class Iterators {
 	 *
 	 * @param iter       An iterator containing elements to add to the container.
 	 * @param collection The collection to add the elements to.
-	 * @return The <tt>collection</tt> object that was supplied to this method.
+	 * @return The <var>collection</var> object that was supplied to this method.
 	 */
 	public static <E, C extends Collection<E>> C addAll(Iterator<? extends E> iter, C collection) {
 		while (iter.hasNext()) {

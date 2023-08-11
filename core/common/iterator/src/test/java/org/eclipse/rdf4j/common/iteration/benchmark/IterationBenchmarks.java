@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2019 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration.benchmark;
@@ -16,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.eclipse.rdf4j.common.iteration.Iteration;
+import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.common.iteration.Iterations;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -54,7 +57,6 @@ public class IterationBenchmarks {
 	public static void main(String[] args) throws RunnerException {
 		Options opt = new OptionsBuilder()
 				.include("IterationBenchmarks") // adapt to control which benchmark tests to run
-				// .addProfiler("stack", "lines=20;period=1;top=20")
 				.forks(1)
 				.build();
 
@@ -155,7 +157,7 @@ public class IterationBenchmarks {
 	}
 
 	@Benchmark
-	public int getFirst() throws Exception {
+	public int getFirst() {
 		Stream<String> stream = Iterations.stream(getIterator(strings));
 
 		return stream
@@ -165,24 +167,29 @@ public class IterationBenchmarks {
 				.orElse(0);
 	}
 
-	private Iteration<String, Exception> getIterator(List<String> list) throws Exception {
-		return new Iteration<String, Exception>() {
+	private CloseableIteration<String, Exception> getIterator(List<String> list) {
+		return new CloseableIteration<>() {
 
-			Iterator<String> iterator = list.iterator();
+			final Iterator<String> iterator = list.iterator();
 
 			@Override
-			public boolean hasNext() throws Exception {
+			public boolean hasNext() {
 				return iterator.hasNext();
 			}
 
 			@Override
-			public String next() throws Exception {
+			public String next() {
 				return iterator.next();
 			}
 
 			@Override
-			public void remove() throws Exception {
+			public void remove() {
 
+			}
+
+			@Override
+			public void close() {
+				// no-op
 			}
 		};
 	}

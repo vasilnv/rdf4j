@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.xml;
@@ -13,19 +16,19 @@ import java.util.Map;
 import org.xml.sax.SAXException;
 
 /**
- * A listener for events reported by <tt>SimpleSAXParser</tt>.
+ * A listener for events reported by <var>SimpleSAXParser</var>.
  */
 public interface SimpleSAXListener {
 
 	/**
 	 * Notifies the listener that the parser has started parsing.
 	 */
-	public void startDocument() throws SAXException;
+	void startDocument() throws SAXException;
 
 	/**
 	 * Notifies the listener that the parser has finished parsing.
 	 */
-	public void endDocument() throws SAXException;
+	void endDocument() throws SAXException;
 
 	/**
 	 * Reports a start tag to the listener. The method call reports the tag's name, the attributes that were found in
@@ -36,12 +39,12 @@ public interface SimpleSAXListener {
 	 * @param text    The text immediately following the start tag, or an empty string if the start tag was followed by
 	 *                a nested start tag or if no text (other than whitespace) was found between start- and end tag.
 	 */
-	public void startTag(String tagName, Map<String, String> atts, String text) throws SAXException;
+	void startTag(String tagName, Map<String, String> atts, String text) throws SAXException;
 
 	/**
 	 * Reports an end tag to the listener.
 	 *
 	 * @param tagName The tag name.
 	 */
-	public void endTag(String tagName) throws SAXException;
+	void endTag(String tagName) throws SAXException;
 }

@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2019 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.federated.evaluation.join;
 
@@ -41,12 +44,14 @@ public class ParallelServiceJoinTask extends ParallelTaskBase<BindingSet> {
 	}
 
 	@Override
-	public CloseableIteration<BindingSet, QueryEvaluationException> performTask() throws Exception {
+	protected CloseableIteration<BindingSet, QueryEvaluationException> performTaskInternal() throws Exception {
 
 		// Note: in order two avoid deadlocks we consume the SERVICE result.
 		// This is basically required to avoid processing background tuple
 		// request (i.e. HTTP slots) in the correct order.
-		return new CollectionIteration<>(Iterations.asList(strategy.evaluateService(expr, bindings)));
+		try (var iter = strategy.evaluateService(expr, bindings)) {
+			return new CollectionIteration<>(Iterations.asList(iter));
+		}
 	}
 
 	@Override

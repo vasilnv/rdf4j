@@ -1,13 +1,17 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iterator;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -23,7 +27,7 @@ public class UnionIterator<E> extends LookAheadIterator<E> {
 
 	private final Iterator<? extends Iterable<? extends E>> argIter;
 
-	private volatile Iterator<? extends E> currentIter;
+	private Iterator<? extends E> currentIter;
 
 	/*--------------*
 	 * Constructors *
@@ -56,7 +60,13 @@ public class UnionIterator<E> extends LookAheadIterator<E> {
 		}
 
 		// Current Iterator exhausted, continue with the next one
-		Iterators.closeSilently(currentIter);
+		if (currentIter instanceof Closeable) {
+			try {
+				((Closeable) currentIter).close();
+			} catch (IOException ioe) {
+				// ignore
+			}
+		}
 
 		if (argIter.hasNext()) {
 			currentIter = argIter.next().iterator();
@@ -75,7 +85,9 @@ public class UnionIterator<E> extends LookAheadIterator<E> {
 			// getNextElement() again
 			super.handleClose();
 		} finally {
-			Iterators.close(currentIter);
+			if (currentIter instanceof Closeable) {
+				((Closeable) currentIter).close();
+			}
 		}
 	}
 }

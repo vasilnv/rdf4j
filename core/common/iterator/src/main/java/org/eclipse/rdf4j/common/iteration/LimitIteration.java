@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration;
@@ -12,8 +15,9 @@ import java.util.NoSuchElementException;
 
 /**
  * An Iteration that limits the amount of elements that it returns from an underlying Iteration to a fixed amount. This
- * class returns the first <tt>limit</tt> elements from the underlying Iteration and drops the rest.
+ * class returns the first <var>limit</var> elements from the underlying Iteration and drops the rest.
  */
+@Deprecated(since = "4.1.0")
 public class LimitIteration<E, X extends Exception> extends IterationWrapper<E, X> {
 
 	/*-----------*
@@ -28,7 +32,7 @@ public class LimitIteration<E, X extends Exception> extends IterationWrapper<E, 
 	/**
 	 * The number of elements that have been returned so far.
 	 */
-	private volatile long returnCount;
+	private long returnCount;
 
 	/*--------------*
 	 * Constructors *
@@ -37,7 +41,7 @@ public class LimitIteration<E, X extends Exception> extends IterationWrapper<E, 
 	/**
 	 * Creates a new LimitIteration.
 	 *
-	 * @param iter  The underlying Iteration, must not be <tt>null</tt>.
+	 * @param iter  The underlying Iteration, must not be <var>null</var>.
 	 * @param limit The number of query answers to return, must be &gt;= 0.
 	 */
 	public LimitIteration(Iteration<? extends E, X> iter, long limit) {

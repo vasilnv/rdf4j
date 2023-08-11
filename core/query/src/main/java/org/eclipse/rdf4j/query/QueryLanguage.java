@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.query;
 
@@ -29,7 +32,7 @@ public class QueryLanguage {
 	/**
 	 * List of known query languages.
 	 */
-	private static List<QueryLanguage> QUERY_LANGUAGES = new ArrayList<>(1);
+	private static final List<QueryLanguage> QUERY_LANGUAGES = new ArrayList<>(1);
 
 	static {
 		register(SPARQL);
@@ -64,7 +67,7 @@ public class QueryLanguage {
 	 * Returns the query language whose name matches the specified name.
 	 *
 	 * @param qlName A query language name.
-	 * @return The query language whose name matches the specified name, or <tt>null</tt> if there is no such query
+	 * @return The query language whose name matches the specified name, or <var>null</var> if there is no such query
 	 *         language.
 	 */
 	public static QueryLanguage valueOf(String qlName) {
@@ -80,7 +83,7 @@ public class QueryLanguage {
 	/**
 	 * The query language's name.
 	 */
-	private String name;
+	private final String name;
 
 	/**
 	 * Creates a new QueryLanguage object.

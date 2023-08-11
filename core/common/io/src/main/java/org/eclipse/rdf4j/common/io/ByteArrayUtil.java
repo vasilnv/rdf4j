@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.io;
@@ -16,7 +19,7 @@ import java.util.BitSet;
 public class ByteArrayUtil {
 
 	/**
-	 * Puts the entire <tt>source</tt> array in the <tt>target</tt> array at offset <tt>offset</tt>.
+	 * Puts the entire <var>source</var> array in the <var>target</var> array at offset <var>offset</var>.
 	 *
 	 * @param source source array
 	 * @param target target array
@@ -27,7 +30,7 @@ public class ByteArrayUtil {
 	}
 
 	/**
-	 * Gets the subarray from <tt>array</tt> that starts at <tt>offset</tt>.
+	 * Gets the subarray from <var>array</var> that starts at <var>offset</var>.
 	 *
 	 * @param array  source array
 	 * @param offset non-negative offset
@@ -38,7 +41,7 @@ public class ByteArrayUtil {
 	}
 
 	/**
-	 * Gets the subarray of length <tt>length</tt> from <tt>array</tt> that starts at <tt>offset</tt>.
+	 * Gets the subarray of length <var>length</var> from <var>array</var> that starts at <var>offset</var>.
 	 *
 	 * @param array  byte array
 	 * @param offset non-negative offset
@@ -176,8 +179,8 @@ public class ByteArrayUtil {
 	}
 
 	/**
-	 * Checks whether <tt>value</tt> matches <tt>pattern</tt> with respect to the bits specified by <tt>mask</tt>. In
-	 * other words: this method returns true if <tt>(value[i] ^ pattern[i]) &amp; mask[i] == 0</tt> for all i.
+	 * Checks whether <var>value</var> matches <var>pattern</var> with respect to the bits specified by <var>mask</var>.
+	 * In other words: this method returns true if <var>(value[i] ^ pattern[i]) &amp; mask[i] == 0</var> for all i.
 	 *
 	 * @param value   byte array
 	 * @param mask
@@ -195,7 +198,8 @@ public class ByteArrayUtil {
 	}
 
 	/**
-	 * Checks whether <tt>subValue</tt> matches the region in <tt>superValue</tt> starting at offset <tt>offset</tt>.
+	 * Checks whether <var>subValue</var> matches the region in <var>superValue</var> starting at offset
+	 * <var>offset</var>.
 	 *
 	 * @param subValue   value to search for
 	 * @param superValue byte array

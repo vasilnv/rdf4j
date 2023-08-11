@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.common.lang.service;
 
@@ -21,10 +24,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A registry that stores services by some key. Upon initialization, the registry searches for service description files
- * at <tt>META-INF/services/&lt;service class name&gt;</tt> and initializes itself accordingly.
+ * at <var>META-INF/services/&lt;service class name&gt;</var> and initializes itself accordingly.
  *
- * @see javax.imageio.spi.ServiceRegistry
  * @author Arjohn Kampman
+ * @see javax.imageio.spi.ServiceRegistry
  */
 public abstract class ServiceRegistry<K, S> {
 
@@ -93,7 +96,7 @@ public abstract class ServiceRegistry<K, S> {
 	 * Checks whether a service for the specified key is available.
 	 *
 	 * @param key The key identifying which service to search for.
-	 * @return <tt>true</tt> if a service for the specific key is available, <tt>false</tt> otherwise.
+	 * @return <var>true</var> if a service for the specific key is available, <var>false</var> otherwise.
 	 */
 	public boolean has(K key) {
 		return services.containsKey(key);

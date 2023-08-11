@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.model.util;
 
@@ -28,7 +31,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 
 /**
  * Utilities for working with RDF Collections and converting to/from Java {@link Collection} classes.
- * <P>
+ * <p>
  * RDF Collections are represented using a Lisp-like structure: the list starts with a head resource (typically a blank
  * node), which is connected to the first collection member via the {@link RDF#FIRST} relation. The head resource is
  * then connected to the rest of the list via an {@link RDF#REST} relation. The last resource in the list is marked
@@ -47,13 +50,13 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
  *                                          |
  *                                          +---rdf:rest--> rdf:nil
  * </pre>
- *
+ * <p>
  * Here, {@code _:n1} is the head resource of the list. Note that in this example it is declared an instance of
  * {@link RDF#LIST}, however this is not required for the collection to be considered well-formed.
  *
  * @author Jeen Broekstra
  * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF Schema 1.1 section on Collection
- *      vocabulary</a>.
+ *      vocabulary</a>
  */
 public class RDFCollections {
 
@@ -78,7 +81,7 @@ public class RDFCollections {
 	 *         Collection added.
 	 * @throws LiteralUtilException if one of the supplied values can not be converted to a Literal.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF Schema 1.1 section on Collection
-	 *      vocabulary</a>.
+	 *      vocabulary</a>
 	 */
 	public static <C extends Collection<Statement>> C asRDF(Iterable<?> values, Resource head, C sink,
 			Resource... contexts) {
@@ -111,8 +114,7 @@ public class RDFCollections {
 	 *         Collection added.
 	 * @throws LiteralUtilException if one of the supplied values can not be converted to a Literal.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF Schema 1.1 section on Collection
-	 *      vocabulary</a>.
-	 *
+	 *      vocabulary</a>
 	 * @since 3.0
 	 */
 	public static <C extends Collection<Statement>> C asRDF(Iterable<?> values, Resource head, C sink,
@@ -138,7 +140,7 @@ public class RDFCollections {
 	 * @throws ModelException if a problem occurs reading the RDF Collection, for example if the Collection is not
 	 *                        well-formed.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF Schema 1.1 section on Collection
-	 *      vocabulary</a>.
+	 *      vocabulary</a>
 	 */
 	public static <C extends Collection<Value>> C asValues(final Model m, Resource head, C collection,
 			Resource... contexts) throws ModelException {
@@ -167,7 +169,7 @@ public class RDFCollections {
 	 *                 left out.
 	 * @throws LiteralUtilException if one of the supplied values can not be converted to a Literal.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF Schema 1.1 section on Collection
-	 *      vocabulary</a>.
+	 *      vocabulary</a>
 	 * @see Literals#createLiteralOrFail(ValueFactory, Object)
 	 */
 	public static void consumeCollection(Iterable<?> values, Resource head, Consumer<Statement> consumer,
@@ -194,9 +196,8 @@ public class RDFCollections {
 	 *                 left out.
 	 * @throws LiteralUtilException if one of the supplied values can not be converted to a Literal.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF Schema 1.1 section on Collection
-	 *      vocabulary</a>.
+	 *      vocabulary</a>
 	 * @see Literals#createLiteralOrFail(ValueFactory, Object)
-	 *
 	 * @since 3.0
 	 */
 	public static void consumeCollection(Iterable<?> values, Resource head, Consumer<Statement> consumer,
@@ -240,7 +241,7 @@ public class RDFCollections {
 	 * @throws ModelException if a problem occurs reading the RDF Collection, for example if the Collection is not
 	 *                        well-formed.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF Schema 1.1 section on Collection
-	 *      vocabulary</a>.
+	 *      vocabulary</a>
 	 */
 	public static void consumeValues(final Model m, Resource head, Consumer<Value> consumer, Resource... contexts)
 			throws ModelException {

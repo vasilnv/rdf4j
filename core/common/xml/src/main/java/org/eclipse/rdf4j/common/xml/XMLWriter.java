@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.xml;
@@ -13,6 +16,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -118,14 +122,8 @@ public class XMLWriter {
 	 * @param outputStream The OutputStream to write the XML to.
 	 */
 	public XMLWriter(OutputStream outputStream) {
-		try {
-			_charEncoding = "UTF-8";
-			_writer = new OutputStreamWriter(outputStream, _charEncoding);
-		} catch (UnsupportedEncodingException e) {
-			// UTF-8 must be supported by all compliant JVM's,
-			// this exception should never be thrown.
-			throw new RuntimeException("UTF-8 character encoding not supported on this platform");
-		}
+		_charEncoding = StandardCharsets.UTF_8.name();
+		_writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -155,7 +153,7 @@ public class XMLWriter {
 	/**
 	 * Checks whether pretty-printing is enabled.
 	 *
-	 * @return <tt>true</tt> if pretty-printing is enabled, <tt>false</tt> otherwise.
+	 * @return <var>true</var> if pretty-printing is enabled, <var>false</var> otherwise.
 	 */
 	public boolean prettyPrintEnabled() {
 		return _prettyPrint;
@@ -222,7 +220,7 @@ public class XMLWriter {
 	 *
 	 * @param name  The name of the attribute.
 	 * @param value The value of the attribute. The integer value will be transformed to a string using the method
-	 *              <tt>String.valueOf(int)</tt>.
+	 *              <var>String.valueOf(int)</var>.
 	 * @see java.lang.String#valueOf(int)
 	 */
 	public void setAttribute(String name, int value) {
@@ -234,7 +232,7 @@ public class XMLWriter {
 	 *
 	 * @param name  The name of the attribute.
 	 * @param value The value of the attribute. The boolean value will be transformed to a string using the method
-	 *              <tt>String.valueOf(boolean)</tt>.
+	 *              <var>String.valueOf(boolean)</var>.
 	 * @see java.lang.String#valueOf(boolean)
 	 */
 	public void setAttribute(String name, boolean value) {
@@ -267,7 +265,7 @@ public class XMLWriter {
 	}
 
 	/**
-	 * Writes an 'empty' element, e.g. <tt>&lt;foo/&gt;</tt>. The tag will contain any previously set attributes.
+	 * Writes an 'empty' element, e.g. <var>&lt;foo/&gt;</var>. The tag will contain any previously set attributes.
 	 *
 	 * @param elName The element name.
 	 * @see #setAttribute(java.lang.String, java.lang.String)
@@ -280,7 +278,7 @@ public class XMLWriter {
 	}
 
 	/**
-	 * Writes a link to an XSL stylesheet, using <tt>&lt;?xml-stylesheet type='text/xsl' href='url'?&gt;</tt>.
+	 * Writes a link to an XSL stylesheet, using <var>&lt;?xml-stylesheet type='text/xsl' href='url'?&gt;</var>.
 	 *
 	 * @param url The URL of the stylesheet.
 	 */
@@ -330,7 +328,7 @@ public class XMLWriter {
 	 *
 	 * @param elName The element name.
 	 * @param value  The value. The integer value will be transformed to a string using the method
-	 *               <tt>String.valueOf(int)</tt>.
+	 *               <var>String.valueOf(int)</var>.
 	 * @see java.lang.String#valueOf(int)
 	 */
 	public void textElement(String elName, int value) throws IOException {
@@ -343,7 +341,7 @@ public class XMLWriter {
 	 *
 	 * @param elName The element name.
 	 * @param value  The boolean value. The integer value will be transformed to a string using the method
-	 *               <tt>String.valueOf(boolean)</tt>.
+	 *               <var>String.valueOf(boolean)</var>.
 	 * @see java.lang.String#valueOf(boolean)
 	 */
 	public void textElement(String elName, boolean value) throws IOException {

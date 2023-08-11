@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.io;
@@ -81,11 +84,11 @@ public class IOUtil {
 	}
 
 	/**
-	 * Reads a string of at most length <tt>maxChars</tt> from the supplied Reader.
+	 * Reads a string of at most length <var>maxChars</var> from the supplied Reader.
 	 *
 	 * @param r        The Reader to read the string from.
 	 * @param maxChars The maximum number of characters to read.
-	 * @return A String of length <tt>maxChars</tt>, or less if the supplied Reader did not contain that much
+	 * @return A String of length <var>maxChars</var>, or less if the supplied Reader did not contain that much
 	 *         characters.
 	 * @throws IOException
 	 */
@@ -181,12 +184,12 @@ public class IOUtil {
 	}
 
 	/**
-	 * Reads at most <tt>maxBytes</tt> bytes from the supplied input stream and returns them as a byte array.
+	 * Reads at most <var>maxBytes</var> bytes from the supplied input stream and returns them as a byte array.
 	 *
 	 * @param in       The InputStream supplying the bytes.
 	 * @param maxBytes The maximum number of bytes to read from the input stream.
-	 * @return A byte array of size <tt>maxBytes</tt> if the input stream can produce that amount of bytes, or a smaller
-	 *         byte array containing all available bytes from the stream otherwise.
+	 * @return A byte array of size <var>maxBytes</var> if the input stream can produce that amount of bytes, or a
+	 *         smaller byte array containing all available bytes from the stream otherwise.
 	 * @throws IOException
 	 */
 	public static byte[] readBytes(InputStream in, int maxBytes) throws IOException {
@@ -275,10 +278,8 @@ public class IOUtil {
 	 */
 	public static Properties readProperties(InputStream in, Properties defaults) throws IOException {
 		Properties result = new Properties(defaults);
-		try {
+		try (in) {
 			result.load(in);
-		} finally {
-			in.close();
 		}
 		return result;
 	}
@@ -315,10 +316,8 @@ public class IOUtil {
 			props = all;
 		}
 
-		try {
+		try (out) {
 			props.store(out, null);
-		} finally {
-			out.close();
 		}
 	}
 
@@ -330,16 +329,8 @@ public class IOUtil {
 	 * @throws IOException If an I/O error occurred.
 	 */
 	public static void writeStream(InputStream in, File file) throws IOException {
-		FileOutputStream out = new FileOutputStream(file);
-
-		try {
+		try (FileOutputStream out = new FileOutputStream(file)) {
 			transfer(in, out);
-		} finally {
-			try {
-				out.flush();
-			} finally {
-				out.close();
-			}
 		}
 	}
 
@@ -404,7 +395,7 @@ public class IOUtil {
 	private static CharArrayWriter readFully(Reader r) throws IOException {
 		CharArrayWriter result = new CharArrayWriter();
 		char[] buf = new char[4096];
-		int charsRead = 0;
+		int charsRead;
 
 		while ((charsRead = r.read(buf)) != -1) {
 			result.write(buf, 0, charsRead);
@@ -414,7 +405,7 @@ public class IOUtil {
 	}
 
 	/**
-	 * Transfers all bytes that can be read from <tt>in</tt> to <tt>out</tt>.
+	 * Transfers all bytes that can be read from <var>in</var> to <var>out</var>.
 	 *
 	 * @param in  The InputStream to read data from.
 	 * @param out The OutputStream to write data to.
@@ -423,7 +414,7 @@ public class IOUtil {
 	 */
 	public static final long transfer(InputStream in, OutputStream out) throws IOException {
 		long totalBytes = 0;
-		int bytesInBuf = 0;
+		int bytesInBuf;
 		byte[] buf = new byte[4096];
 
 		while ((bytesInBuf = in.read(buf)) != -1) {
@@ -435,9 +426,9 @@ public class IOUtil {
 	}
 
 	/**
-	 * Writes all bytes from an <tt>InputStream</tt> to a file.
+	 * Writes all bytes from an <var>InputStream</var> to a file.
 	 *
-	 * @param in   The <tt>InputStream</tt> containing the data to write to the file.
+	 * @param in   The <var>InputStream</var> containing the data to write to the file.
 	 * @param file The file to write the data to.
 	 * @return The total number of bytes written.
 	 * @throws IOException If an I/O error occurred while trying to write the data to the file.
@@ -449,7 +440,7 @@ public class IOUtil {
 	}
 
 	/**
-	 * Transfers all characters that can be read from <tt>in</tt> to <tt>out</tt> .
+	 * Transfers all characters that can be read from <var>in</var> to <var>out</var> .
 	 *
 	 * @param in  The Reader to read characters from.
 	 * @param out The Writer to write characters to.
@@ -458,7 +449,7 @@ public class IOUtil {
 	 */
 	public static final long transfer(Reader in, Writer out) throws IOException {
 		long totalChars = 0;
-		int charsInBuf = 0;
+		int charsInBuf;
 		char[] buf = new char[4096];
 
 		while ((charsInBuf = in.read(buf)) != -1) {
@@ -470,9 +461,9 @@ public class IOUtil {
 	}
 
 	/**
-	 * Writes all characters from a <tt>Reader</tt> to a file using the default character encoding.
+	 * Writes all characters from a <var>Reader</var> to a file using the default character encoding.
 	 *
-	 * @param reader The <tt>Reader</tt> containing the data to write to the file.
+	 * @param reader The <var>Reader</var> containing the data to write to the file.
 	 * @param file   The file to write the data to.
 	 * @return The total number of characters written.
 	 * @throws IOException If an I/O error occurred while trying to write the data to the file.
@@ -497,7 +488,7 @@ public class IOUtil {
 	 * </p>
 	 * <p>
 	 * The table below shows a few examples of decimals encoded both as a 32-bit integer and as variable length binary:
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * decimal |           32-bit integer            |          variable length binary
@@ -545,7 +536,7 @@ public class IOUtil {
 
 	/**
 	 * Read an variable length integer. See {@link #writeVarInt(OutputStream, int)} for encoding details.
-	 * 
+	 *
 	 * @param in The {@link InputStream} to read from.
 	 * @return The integer read.
 	 * @throws IOException If an error occurred while reading the integer.

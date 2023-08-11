@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration;
@@ -12,15 +15,16 @@ import java.util.NoSuchElementException;
 
 /**
  * A CloseableIteration that wraps another Iteration, applying a filter on the objects that are returned. Subclasses
- * must implement the <tt>accept</tt> method to indicate which objects should be returned.
+ * must implement the <var>accept</var> method to indicate which objects should be returned.
  */
+@Deprecated(since = "4.1.0")
 public abstract class FilterIteration<E, X extends Exception> extends IterationWrapper<E, X> {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	private volatile E nextElement;
+	private E nextElement;
 
 	/*--------------*
 	 * Constructors *
@@ -90,7 +94,7 @@ public abstract class FilterIteration<E, X extends Exception> extends IterationW
 	 * Iteration pass through this method in the same order as they are coming from the wrapped Iteration.
 	 *
 	 * @param object The object to be tested.
-	 * @return <tt>true</tt> if the object should be returned, <tt>false</tt> otherwise.
+	 * @return <var>true</var> if the object should be returned, <var>false</var> otherwise.
 	 * @throws X
 	 */
 	protected abstract boolean accept(E object) throws X;

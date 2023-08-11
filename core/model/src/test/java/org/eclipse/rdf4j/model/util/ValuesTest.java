@@ -1,9 +1,12 @@
-/******************************************************************************* 
- * Copyright (c) 2020 Eclipse RDF4J contributors. 
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Eclipse Distribution License v1.0 
- * which accompanies this distribution, and is available at 
- * http://www.eclipse.org/org/documents/edl-v10.php. 
+/*******************************************************************************
+ * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.model.util;
 
@@ -14,6 +17,7 @@ import static org.eclipse.rdf4j.model.util.Values.iri;
 import static org.eclipse.rdf4j.model.util.Values.literal;
 import static org.eclipse.rdf4j.model.util.Values.namespace;
 import static org.eclipse.rdf4j.model.util.Values.triple;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -21,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -34,13 +39,14 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Triple;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.base.CoreDatatype;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests on {@link Values} convenience functions.
@@ -48,15 +54,14 @@ import org.junit.Test;
  * Note that this is not intended to be a complete compliance suite for handling all possible cases of syntactically
  * (il)legal inputs: that kind of testing is handled at the level of the {@link ValueFactory} implementations. We merely
  * test common cases against user expectations here.
- * 
- * @author Jeen Broekstra
  *
+ * @author Jeen Broekstra
  */
 public class ValuesTest {
 
 	private ValueFactory vf;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		vf = mock(ValueFactory.class);
 	}
@@ -85,14 +90,14 @@ public class ValuesTest {
 		verify(vf).createIRI(RDF.NAMESPACE, "type");
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testInvalidIri1() {
-		iri("http://an invalid iri/");
+		assertThrows(IllegalArgumentException.class, () -> iri("http://an invalid iri/"));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testInvalidIri2() {
-		iri("http://valid-namespace.org/", "invalid localname");
+		assertThrows(IllegalArgumentException.class, () -> iri("http://valid-namespace.org/", "invalid localname"));
 	}
 
 	@Test
@@ -191,6 +196,7 @@ public class ValuesTest {
 
 		assertThat(literal.getLabel()).isEqualTo(lexValue);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.STRING);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.STRING);
 	}
 
 	@Test
@@ -217,6 +223,7 @@ public class ValuesTest {
 		assertThat(literal.getLabel()).isEqualTo(lexValue);
 		assertThat(literal.getLanguage()).isNotEmpty().contains(languageTag);
 		assertThat(literal.getDatatype()).isEqualTo(RDF.LANGSTRING);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.RDF.LANGSTRING);
 	}
 
 	@Test
@@ -248,11 +255,12 @@ public class ValuesTest {
 	@Test
 	public void testValidTypedLiteral() {
 		String lexValue = "42";
-		Literal literal = literal(lexValue, XSD.INT);
+		Literal literal = literal(lexValue, CoreDatatype.XSD.INT);
 
 		assertThat(literal.getLabel()).isEqualTo(lexValue);
 		assertThat(literal.intValue()).isEqualTo(42);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.INT);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.INT);
 	}
 
 	@Test
@@ -262,14 +270,20 @@ public class ValuesTest {
 		verify(vf).createLiteral(lexValue, XSD.INT);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testInvalidTypedLiteral() {
 		String lexValue = "fourty two";
-		literal(lexValue, XSD.INT);
+		assertThrows(IllegalArgumentException.class, () -> literal(lexValue, XSD.INT));
 	}
 
 	@Test
-	public void testTypedLiteralNull1() {
+	public void testInvalidTypedLiteralCoreDatatype() {
+		String lexValue = "fourty two";
+		assertThrows(IllegalArgumentException.class, () -> literal(lexValue, CoreDatatype.XSD.INT));
+	}
+
+	@Test
+	public void testTypedLiteralNullLexValue() {
 		String lexValue = null;
 		assertThatThrownBy(() -> literal(lexValue, XSD.INT))
 				.isInstanceOf(NullPointerException.class)
@@ -277,9 +291,18 @@ public class ValuesTest {
 	}
 
 	@Test
-	public void testTypedLiteralNull2() {
+	public void testTypedLiteralNullDatatype() {
 		String lexValue = "42";
 		IRI datatype = null;
+		assertThatThrownBy(() -> literal(lexValue, datatype))
+				.isInstanceOf(NullPointerException.class)
+				.hasMessageContaining("datatype may not be null");
+	}
+
+	@Test
+	public void testTypedLiteralNullCoreDatatype() {
+		String lexValue = "42";
+		CoreDatatype datatype = null;
 		assertThatThrownBy(() -> literal(lexValue, datatype))
 				.isInstanceOf(NullPointerException.class)
 				.hasMessageContaining("datatype may not be null");
@@ -291,11 +314,13 @@ public class ValuesTest {
 		assertThat(literal.getLabel()).isEqualTo("true");
 		assertThat(literal.booleanValue()).isTrue();
 		assertThat(literal.getDatatype()).isEqualTo(XSD.BOOLEAN);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.BOOLEAN);
 
 		literal = literal(false);
 		assertThat(literal.getLabel()).isEqualTo("false");
 		assertThat(literal.booleanValue()).isFalse();
 		assertThat(literal.getDatatype()).isEqualTo(XSD.BOOLEAN);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.BOOLEAN);
 	}
 
 	@Test
@@ -311,6 +336,7 @@ public class ValuesTest {
 		assertThat(literal.getLabel()).isEqualTo("42");
 		assertThat(literal.byteValue()).isEqualTo(value);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.BYTE);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.BYTE);
 	}
 
 	@Test
@@ -327,6 +353,7 @@ public class ValuesTest {
 		assertThat(literal.getLabel()).isEqualTo("42");
 		assertThat(literal.shortValue()).isEqualTo(value);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.SHORT);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.SHORT);
 	}
 
 	@Test
@@ -343,6 +370,7 @@ public class ValuesTest {
 		assertThat(literal.getLabel()).isEqualTo("42");
 		assertThat(literal.intValue()).isEqualTo(value);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.INT);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.INT);
 	}
 
 	@Test
@@ -358,6 +386,7 @@ public class ValuesTest {
 		Literal literal = literal(value);
 		assertThat(literal.longValue()).isEqualTo(value);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.LONG);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.LONG);
 	}
 
 	@Test
@@ -373,6 +402,7 @@ public class ValuesTest {
 		Literal literal = literal(value);
 		assertThat(literal.floatValue()).isEqualTo(value);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.FLOAT);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.FLOAT);
 	}
 
 	@Test
@@ -388,6 +418,7 @@ public class ValuesTest {
 		Literal literal = literal(value);
 		assertThat(literal.doubleValue()).isEqualTo(value);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.DOUBLE);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.DOUBLE);
 	}
 
 	@Test
@@ -403,6 +434,7 @@ public class ValuesTest {
 		Literal literal = literal(value);
 		assertThat(literal.decimalValue()).isEqualTo(value);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.DECIMAL);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.DECIMAL);
 	}
 
 	@Test
@@ -428,6 +460,7 @@ public class ValuesTest {
 		Literal literal = literal(value);
 		assertThat(literal.integerValue()).isEqualTo(value);
 		assertThat(literal.getDatatype()).isEqualTo(XSD.INTEGER);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.INTEGER);
 	}
 
 	@Test
@@ -455,6 +488,7 @@ public class ValuesTest {
 		assertThat(literal.temporalAccessorValue()).isEqualTo(value);
 		assertThat(literal.getLabel()).isEqualTo(value.toString());
 		assertThat(literal.getDatatype()).isEqualTo(XSD.DATETIME);
+		assertThat(literal.getCoreDatatype()).isEqualTo(CoreDatatype.XSD.DATETIME);
 	}
 
 	@Test
@@ -579,6 +613,15 @@ public class ValuesTest {
 	}
 
 	@Test
+	public void testLiteralObjectBigDecimal() throws Exception {
+		Object obj = BigDecimal.valueOf(42.1);
+		Literal l = literal(obj);
+		assertThat(l).isNotNull();
+		assertThat(l.getDatatype()).isEqualTo(XSD.DECIMAL);
+		assertThat(l.decimalValue().doubleValue()).isEqualTo(42.1);
+	}
+
+	@Test
 	public void testLiteralObjectInteger() throws Exception {
 		Object obj = Integer.valueOf(42);
 		Literal l = literal(obj);
@@ -588,12 +631,12 @@ public class ValuesTest {
 	}
 
 	@Test
-	public void testLiteralObjectLong() throws Exception {
-		Object obj = Long.valueOf(42l);
+	public void testLiteralObjectBigInteger() throws Exception {
+		Object obj = BigInteger.valueOf(42l);
 		Literal l = literal(obj);
 		assertThat(l).isNotNull();
-		assertThat(l.getDatatype()).isEqualTo(XSD.LONG);
-		assertThat(l.longValue()).isEqualTo(42l);
+		assertThat(l.getDatatype()).isEqualTo(XSD.INTEGER);
+		assertThat(l.integerValue()).isEqualTo(42l);
 	}
 
 	@Test
@@ -617,7 +660,6 @@ public class ValuesTest {
 		} catch (DatatypeConfigurationException e) {
 			fail("Could not instantiate javax.xml.datatype.DatatypeFactory");
 		}
-
 	}
 
 	@Test
@@ -626,6 +668,15 @@ public class ValuesTest {
 		Literal l = literal(obj);
 		assertThat(l).isNotNull();
 		assertThat(l.getDatatype()).isEqualTo(XSD.DATETIME);
+	}
+
+	@Test
+	public void testLiteralTemporalPeriod() throws Exception {
+		Object obj = Period.ofWeeks(42);
+		Literal l = literal(obj);
+		assertThat(l).isNotNull();
+		assertThat(l.getDatatype()).isEqualTo(XSD.DURATION);
+		assertThat(l.temporalAmountValue()).isEqualTo(Period.ofWeeks(42));
 	}
 
 	@Test

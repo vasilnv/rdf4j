@@ -1,15 +1,19 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * An Iteration that returns the intersection of the results of two Iterations. Optionally, the Iteration can be
@@ -18,6 +22,7 @@ import java.util.Set;
  * Note that duplicates can also be filtered by wrapping this Iteration in a {@link DistinctIteration}, but that has a
  * bit more overhead as it adds a second hash table lookup.
  */
+@Deprecated(since = "4.1.0")
 public class IntersectIteration<E, X extends Exception> extends FilterIteration<E, X> {
 
 	/*-----------*
@@ -28,9 +33,11 @@ public class IntersectIteration<E, X extends Exception> extends FilterIteration<
 
 	private final boolean distinct;
 
-	private volatile boolean initialized;
+	private boolean initialized;
 
-	private volatile Set<E> includeSet;
+	private Set<E> includeSet;
+
+	private final Supplier<Set<E>> setMaker;
 
 	/*--------------*
 	 * Constructors *
@@ -45,6 +52,11 @@ public class IntersectIteration<E, X extends Exception> extends FilterIteration<
 	 */
 	public IntersectIteration(Iteration<? extends E, ? extends X> arg1, Iteration<? extends E, ? extends X> arg2) {
 		this(arg1, arg2, false);
+	}
+
+	public IntersectIteration(Iteration<? extends E, ? extends X> arg1, Iteration<? extends E, ? extends X> arg2,
+			Supplier<Set<E>> setMaker) {
+		this(arg1, arg2, false, setMaker);
 	}
 
 	/**
@@ -63,6 +75,26 @@ public class IntersectIteration<E, X extends Exception> extends FilterIteration<
 		this.arg2 = arg2;
 		this.distinct = distinct;
 		this.initialized = false;
+		this.setMaker = this::makeSet;
+	}
+
+	/**
+	 * Creates a new IntersectIteration that returns the intersection of the results of two Iterations.
+	 *
+	 * @param arg1     An Iteration containing the first set of elements.
+	 * @param arg2     An Iteration containing the second set of elements.
+	 * @param distinct Flag indicating whether duplicate elements should be filtered from the result.
+	 */
+	public IntersectIteration(Iteration<? extends E, ? extends X> arg1, Iteration<? extends E, ? extends X> arg2,
+			boolean distinct, Supplier<Set<E>> setMaker) {
+		super(arg1);
+
+		assert arg2 != null;
+
+		this.arg2 = arg2;
+		this.distinct = distinct;
+		this.initialized = false;
+		this.setMaker = setMaker;
 	}
 
 	/*--------------*
@@ -70,18 +102,14 @@ public class IntersectIteration<E, X extends Exception> extends FilterIteration<
 	 *--------------*/
 
 	/**
-	 * Returns <tt>true</tt> if the object is in the set of elements of the second argument.
+	 * Returns <var>true</var> if the object is in the set of elements of the second argument.
 	 */
 	@Override
 	protected boolean accept(E object) throws X {
 		if (!initialized) {
-			synchronized (this) {
-				if (!initialized) {
-					// Build set of elements-to-include from second argument
-					includeSet = Iterations.asSet(arg2);
-					initialized = true;
-				}
-			}
+			// Build set of elements-to-include from second argument
+			includeSet = Iterations.asSet(arg2);
+			initialized = true;
 		}
 
 		if (inIncludeSet(object)) {
@@ -101,7 +129,7 @@ public class IntersectIteration<E, X extends Exception> extends FilterIteration<
 
 	// this method does not seem to "addSecondSet" since the second set seems to be ignored
 	public Set<E> addSecondSet(Iteration<? extends E, ? extends X> arg2, Set<E> set) throws X {
-		return Iterations.addAll(arg2, makeSet());
+		return Iterations.addAll(arg2, setMaker.get());
 	}
 
 	protected boolean removeFromIncludeSet(E object) {

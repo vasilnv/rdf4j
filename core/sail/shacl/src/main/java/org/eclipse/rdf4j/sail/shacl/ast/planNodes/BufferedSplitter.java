@@ -1,9 +1,12 @@
 /*******************************************************************************
- * .Copyright (c) 2020 Eclipse RDF4J contributors.
+ * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.sail.shacl.ast.planNodes;
@@ -12,11 +15,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.sail.SailException;
-import org.eclipse.rdf4j.sail.shacl.GlobalValidationExecutionLogging;
 import org.eclipse.rdf4j.sail.shacl.ast.ShaclUnsupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,20 +33,30 @@ import org.slf4j.LoggerFactory;
  */
 public class BufferedSplitter implements PlanNodeProvider {
 
+	private static final AtomicLong idCounter = new AtomicLong();
+
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	PlanNode parent;
+	private final PlanNode parent;
+	private final boolean cached;
 	private volatile List<ValidationTuple> tuplesBuffer;
+	private long id = -1;
 
-	public BufferedSplitter(PlanNode planNode) {
-		parent = planNode;
+	public BufferedSplitter(PlanNode parent, boolean cached) {
+		this.parent = parent;
+		this.cached = cached;
+		id = idCounter.incrementAndGet();
+
 	}
 
-	synchronized private void init() {
+	public BufferedSplitter(PlanNode parent) {
+		this(parent, true);
+	}
+
+	private synchronized void init() {
 		if (tuplesBuffer == null) {
 			tuplesBuffer = new ArrayList<>();
 			try (CloseableIteration<? extends ValidationTuple, SailException> iterator = parent.iterator()) {
-
 				while (iterator.hasNext()) {
 					ValidationTuple next = iterator.next();
 					tuplesBuffer.add(next);
@@ -53,11 +66,14 @@ public class BufferedSplitter implements PlanNodeProvider {
 
 	}
 
+	public String getId() {
+		int length = (idCounter.get() + "").length();
+		return String.format("%0" + length + "d", id);
+	}
+
 	@Override
 	public PlanNode getPlanNode() {
-
-		return new BufferedSplitterPlaneNode(this);
-
+		return new BufferedSplitterPlaneNode(this, cached);
 	}
 
 	@Override
@@ -77,23 +93,31 @@ public class BufferedSplitter implements PlanNodeProvider {
 		return Objects.hash(parent);
 	}
 
-	class BufferedSplitterPlaneNode implements PlanNode {
+	public static class BufferedSplitterPlaneNode implements PlanNode {
 		private final BufferedSplitter bufferedSplitter;
+		public final boolean cached;
 		private boolean printed = false;
 
 		private ValidationExecutionLogger validationExecutionLogger;
 
-		public BufferedSplitterPlaneNode(BufferedSplitter bufferedSplitter) {
+		public BufferedSplitterPlaneNode(BufferedSplitter bufferedSplitter, boolean cached) {
 			this.bufferedSplitter = bufferedSplitter;
+			this.cached = cached;
 		}
 
 		@Override
 		public CloseableIteration<? extends ValidationTuple, SailException> iterator() {
 
-			bufferedSplitter.init();
-			Iterator<ValidationTuple> iterator = bufferedSplitter.tuplesBuffer.iterator();
+			return new CloseableIteration<>() {
 
-			return new CloseableIteration<ValidationTuple, SailException>() {
+				Iterator<ValidationTuple> iterator;
+
+				private void init() {
+					if (iterator == null) {
+						bufferedSplitter.init();
+						iterator = bufferedSplitter.tuplesBuffer.iterator();
+					}
+				}
 
 				@Override
 				public void close() throws SailException {
@@ -102,17 +126,18 @@ public class BufferedSplitter implements PlanNodeProvider {
 
 				@Override
 				public boolean hasNext() throws SailException {
+					init();
 					return iterator.hasNext();
 				}
 
 				@Override
 				public ValidationTuple next() throws SailException {
+					init();
 					ValidationTuple tuple = iterator.next();
-					if (GlobalValidationExecutionLogging.loggingEnabled) {
+					if (validationExecutionLogger.isEnabled()) {
 						validationExecutionLogger.log(depth(),
 								bufferedSplitter.parent.getClass().getSimpleName() + ":BufferedSplitter.next()", tuple,
-								bufferedSplitter.parent,
-								getId(), null);
+								bufferedSplitter.parent, getId(), null);
 					}
 					return tuple;
 				}

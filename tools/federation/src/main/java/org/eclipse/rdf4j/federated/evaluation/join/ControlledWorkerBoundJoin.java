@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2019 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.federated.evaluation.join;
 
@@ -71,7 +74,7 @@ public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 		Phaser currentPhaser = phaser;
 
 		// first item is always sent in a non-bound way
-		if (!closed && leftIter.hasNext()) {
+		if (!isClosed() && leftIter.hasNext()) {
 			BindingSet b = leftIter.next();
 			totalBindings++;
 			if (expr instanceof StatementTupleExpr) {
@@ -88,14 +91,14 @@ public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 				throw new RuntimeException("Expr is of unexpected type: " + expr.getClass().getCanonicalName()
 						+ ". Please report this problem.");
 			}
-			phaser.register();
+			currentPhaser.register();
 			scheduler.schedule(
 					new ParallelJoinTask(new PhaserHandlingParallelExecutor(this, currentPhaser), strategy, expr, b));
 		}
 
 		int nBindings;
-		List<BindingSet> bindings = null;
-		while (!closed && leftIter.hasNext()) {
+		List<BindingSet> bindings;
+		while (!isClosed() && leftIter.hasNext()) {
 
 			// create a new phaser if there are more than 10000 parties
 			// note: a phaser supports only up to 65535 registered parties
@@ -122,16 +125,18 @@ public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 			bindings = new ArrayList<>(nBindings);
 
 			int count = 0;
-			while (count < nBindings && leftIter.hasNext()) {
+			while (!isClosed() && count < nBindings && leftIter.hasNext()) {
 				bindings.add(leftIter.next());
 				count++;
 			}
 
 			totalBindings += count;
 
-			phaser.register();
+			currentPhaser.register();
 			scheduler.schedule(taskCreator.getTask(new PhaserHandlingParallelExecutor(this, currentPhaser), bindings));
 		}
+
+		leftIter.close();
 
 		scheduler.informFinish(this);
 
@@ -140,6 +145,16 @@ public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 		}
 
 		phaser.awaitAdvanceInterruptibly(phaser.arrive(), queryInfo.getMaxRemainingTimeMS(), TimeUnit.MILLISECONDS);
+	}
+
+	@Override
+	public void handleClose() throws QueryEvaluationException {
+		try {
+			super.handleClose();
+		} finally {
+			// signal the phaser to close (if currently being blocked)
+			phaser.forceTermination();
+		}
 	}
 
 	/**
@@ -162,7 +177,7 @@ public class ControlledWorkerBoundJoin extends ControlledWorkerJoin {
 	}
 
 	protected interface TaskCreator {
-		public ParallelTask<BindingSet> getTask(ParallelExecutor<BindingSet> control, List<BindingSet> bindings);
+		ParallelTask<BindingSet> getTask(ParallelExecutor<BindingSet> control, List<BindingSet> bindings);
 	}
 
 	protected class BoundJoinTaskCreator implements TaskCreator {

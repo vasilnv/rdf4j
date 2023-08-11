@@ -1,10 +1,14 @@
-/******************************************************************************* 
+/*******************************************************************************
  * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
+
 package org.eclipse.rdf4j.common.iteration;
 
 import java.util.NoSuchElementException;
@@ -17,6 +21,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jeen Broekstra
  */
+@Deprecated(since = "4.1.0")
 public class SilentIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 
 	private static final Logger logger = LoggerFactory.getLogger(SilentIteration.class);
@@ -30,6 +35,9 @@ public class SilentIteration<T, E extends Exception> extends IterationWrapper<T,
 		try {
 			return super.hasNext();
 		} catch (Exception e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
 			if (logger.isTraceEnabled()) {
 				logger.trace("Suppressed error in SILENT iteration: " + e.getMessage(), e);
 			}
@@ -45,6 +53,9 @@ public class SilentIteration<T, E extends Exception> extends IterationWrapper<T,
 			// pass through
 			throw e;
 		} catch (Exception e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
 			if (logger.isTraceEnabled()) {
 				logger.trace("Converted error in SILENT iteration: " + e.getMessage(), e);
 			}
@@ -57,6 +68,9 @@ public class SilentIteration<T, E extends Exception> extends IterationWrapper<T,
 		try {
 			super.handleClose();
 		} catch (Exception e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
 			if (logger.isTraceEnabled()) {
 				logger.trace("Suppressed error in SILENT iteration: " + e.getMessage(), e);
 			}

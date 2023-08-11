@@ -1,15 +1,19 @@
-/******************************************************************************* 
- * Copyright (c) 2021 Eclipse RDF4J contributors. 
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Eclipse Distribution License v1.0 
- * which accompanies this distribution, and is available at 
- * http://www.eclipse.org/org/documents/edl-v10.php. 
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.model.util;
 
 import static org.eclipse.rdf4j.model.util.Values.bnode;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,13 +34,11 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Triple;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.DynamicModelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -47,44 +49,41 @@ import com.google.common.hash.Hashing;
 
 /**
  * Functions for canonicalizing RDF models and computing isomorphism.
- * 
+ *
+ * @author Jeen Broekstra
  * @implNote The algorithms used in this class are based on the iso-canonical algorithm as described in: Hogan, A.
  *           (2017). Canonical forms for isomorphic and equivalent RDF graphs: algorithms for leaning and labelling
  *           blank nodes. ACM Transactions on the Web (TWEB), 11(4), 1-62.
- * 
- * @author Jeen Broekstra
  */
 class GraphComparisons {
 
 	private static final Logger logger = LoggerFactory.getLogger(GraphComparisons.class);
 
-	private static final HashFunction hashFunction = Hashing.murmur3_128();
+	private static final HashFunction hashFunction = Hashing.sha256();
 
-	private static final HashCode initialHashCode = hashFunction.hashString("", Charsets.UTF_8);
-	private static final HashCode outgoing = hashFunction.hashString("+", Charsets.UTF_8);
-	private static final HashCode incoming = hashFunction.hashString("-", Charsets.UTF_8);
-	private static final HashCode distinguisher = hashFunction.hashString("@", Charsets.UTF_8);
+	private static final HashCode initialHashCode = hashFunction.hashString("", StandardCharsets.UTF_8);
+	private static final HashCode outgoing = hashFunction.hashString("+", StandardCharsets.UTF_8);
+	private static final HashCode incoming = hashFunction.hashString("-", StandardCharsets.UTF_8);
+	private static final HashCode distinguisher = hashFunction.hashString("@", StandardCharsets.UTF_8);
 
 	/**
-	 * Compares two RDF models, and returns <tt>true</tt> if they consist of isomorphic graphs and the isomorphic graph
-	 * identifiers map 1:1 to each other. RDF graphs are isomorphic graphs if statements from one graphs can be mapped
-	 * 1:1 on to statements in the other graphs. In this mapping, blank nodes are not considered mapped when having an
-	 * identical internal id, but are mapped from one graph to the other by looking at the statements in which the blank
-	 * nodes occur. A Model can consist of more than one graph (denoted by context identifiers). Two models are
-	 * considered isomorphic if for each of the graphs in one model, an isomorphic graph exists in the other model, and
-	 * the context identifiers of these graphs are identical.
-	 * 
+	 * Compares two RDF models, and returns <var>true</var> if they consist of isomorphic graphs and the isomorphic
+	 * graph identifiers map 1:1 to each other. RDF graphs are isomorphic graphs if statements from one graphs can be
+	 * mapped 1:1 on to statements in the other graphs. In this mapping, blank nodes are not considered mapped when
+	 * having an identical internal id, but are mapped from one graph to the other by looking at the statements in which
+	 * the blank nodes occur. A Model can consist of more than one graph (denoted by context identifiers). Two models
+	 * are considered isomorphic if for each of the graphs in one model, an isomorphic graph exists in the other model,
+	 * and the context identifiers of these graphs are identical.
+	 *
 	 * @implNote The algorithm used by this comparison is a depth-first search for an iso-canonical blank node mapping
 	 *           for each model, and using that as a basis for comparison. The algorithm is described in detail in:
 	 *           Hogan, A. (2017). Canonical forms for isomorphic and equivalent RDF graphs: algorithms for leaning and
 	 *           labelling blank nodes. ACM Transactions on the Web (TWEB), 11(4), 1-62.
-	 *
 	 * @see <a href="http://www.w3.org/TR/rdf11-concepts/#graph-isomorphism">RDF Concepts &amp; Abstract Syntax, section
 	 *      3.6 (Graph Comparison)</a>
-	 * @see Hogan, A. (2017). Canonical forms for isomorphic and equivalent RDF graphs: algorithms for leaning and
-	 *      labelling blank nodes. ACM Transactions on the Web (TWEB), 11(4), 1-62.
-	 *      <a href="http://aidanhogan.com/docs/rdf-canonicalisation.pdf">Technical Paper (PDF )</a>
-	 * 
+	 * @see <a href="http://aidanhogan.com/docs/rdf-canonicalisation.pdf">Hogan, A. (2017). Canonical forms for
+	 *      isomorphic and equivalent RDF graphs: algorithms for leaning and labelling blank nodes. ACM Transactions on
+	 *      the Web (TWEB), 11(4), 1-62. Technical Paper (PDF )</a>
 	 */
 	public static boolean isomorphic(Model model1, Model model2) {
 		if (model1 == model2) {
@@ -379,7 +378,6 @@ class GraphComparisons {
 	/**
 	 * Encapsulates the current partitioning state of the algorithm, keeping track of previous and current node:hashcode
 	 * mappings as well as static value mappings.
-	 *
 	 */
 	static class Partitioning {
 
@@ -418,7 +416,7 @@ class GraphComparisons {
 				return getStaticLiteralHashCode((Literal) value);
 			}
 			return staticValueMapping.computeIfAbsent(value,
-					v -> hashFunction.hashString(v.stringValue(), Charsets.UTF_8));
+					v -> hashFunction.hashString(v.stringValue(), StandardCharsets.UTF_8));
 		}
 
 		public Set<BNode> getNodes() {
@@ -433,7 +431,7 @@ class GraphComparisons {
 				return getStaticLiteralHashCode((Literal) value);
 			}
 			return staticValueMapping.computeIfAbsent(value,
-					v -> hashFunction.hashString(v.stringValue(), Charsets.UTF_8));
+					v -> hashFunction.hashString(v.stringValue(), StandardCharsets.UTF_8));
 
 		}
 
@@ -453,7 +451,7 @@ class GraphComparisons {
 
 		/**
 		 * A partitioning is fine if every hashcode maps to exactly one blank node.
-		 * 
+		 *
 		 * @return true if the partitioning is fine, false otherwise.
 		 */
 		public boolean isFine() {
@@ -513,7 +511,7 @@ class GraphComparisons {
 						Literal l = (Literal) v;
 						List<HashCode> hashSequence = new ArrayList<>(3);
 
-						hashSequence.add(hashFunction.hashString(l.getLabel(), Charsets.UTF_8));
+						hashSequence.add(hashFunction.hashString(l.getLabel(), StandardCharsets.UTF_8));
 
 						// Per BCP47, language tags are case-insensitive. Use normalized form to ensure consistency if
 						// possible, otherwise just use lower-case.
@@ -521,9 +519,10 @@ class GraphComparisons {
 								.map(lang -> hashFunction.hashString(
 										Literals.isValidLanguageTag(lang) ? Literals.normalizeLanguageTag(lang)
 												: lang.toLowerCase(),
-										Charsets.UTF_8))
+										StandardCharsets.UTF_8))
 								.ifPresent(h -> hashSequence.add(h));
-						hashSequence.add(hashFunction.hashString(l.getDatatype().stringValue(), Charsets.UTF_8));
+						hashSequence
+								.add(hashFunction.hashString(l.getDatatype().stringValue(), StandardCharsets.UTF_8));
 						return Hashing.combineOrdered(hashSequence);
 					}
 			);
@@ -542,7 +541,7 @@ class GraphComparisons {
 		 * <p>
 		 * it is unchanged if: all bnodes that have the same hashcode in current also shared the same hashcode in
 		 * previous, and all bnodes that have different ones in current also have different ones in previous.
-		 * 
+		 *
 		 * @return true if unchanged, false otherwise
 		 */
 		private boolean currentUnchanged() {

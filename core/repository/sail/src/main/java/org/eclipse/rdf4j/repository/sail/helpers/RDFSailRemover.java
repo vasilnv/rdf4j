@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.repository.sail.helpers;
 
@@ -82,7 +85,7 @@ class RDFSailRemover extends AbstractRDFHandler {
 	/**
 	 * Checks whether this RDFRemover enforces its contexts upon all statements that are reported to it.
 	 *
-	 * @return <tt>true</tt> if it enforces its contexts, <tt>false</tt> otherwise.
+	 * @return <var>true</var> if it enforces its contexts, <var>false</var> otherwise.
 	 */
 	public boolean enforcesContext() {
 		return contexts.length != 0;
@@ -90,9 +93,9 @@ class RDFSailRemover extends AbstractRDFHandler {
 
 	/**
 	 * Gets the contexts that this RDFRemover enforces upon all statements that are reported to it (in case
-	 * <tt>enforcesContext()</tt> returns <tt>true</tt>).
+	 * <var>enforcesContext()</var> returns <var>true</var>).
 	 *
-	 * @return A Resource[] identifying the contexts, or <tt>null</tt> if no contexts is enforced.
+	 * @return A Resource[] identifying the contexts, or <var>null</var> if no contexts is enforced.
 	 */
 	public Resource[] getContexts() {
 		return contexts;

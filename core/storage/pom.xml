@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.eclipse.rdf4j</groupId>
 		<artifactId>rdf4j-core</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
+		<version>4.3.6-SNAPSHOT</version>
 	</parent>
 	<artifactId>rdf4j-storage</artifactId>
 	<name>RDF4J: Storage Libraries</name>
@@ -136,25 +136,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-sail-federation</artifactId>
-			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.rdf4j</groupId>
-					<artifactId>rdf4j-model</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.eclipse.rdf4j</groupId>
-					<artifactId>rdf4j-rio-turtle</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.eclipse.rdf4j</groupId>
-					<artifactId>rdf4j-repository-manager</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.rdf4j</groupId>
 			<artifactId>rdf4j-sail-inferencer</artifactId>
 			<version>${project.version}</version>
 			<exclusions>
@@ -220,7 +201,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-sail-nativerdf</artifactId>
+			<artifactId>rdf4j-sail-lmdb</artifactId>
 			<version>${project.version}</version>
 			<exclusions>
 				<exclusion>
@@ -239,8 +220,22 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-sail-spin</artifactId>
+			<artifactId>rdf4j-sail-nativerdf</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.eclipse.rdf4j</groupId>
+					<artifactId>rdf4j-queryalgebra-model</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.rdf4j</groupId>
+					<artifactId>rdf4j-model</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.rdf4j</groupId>
+					<artifactId>rdf4j-query</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.rdf4j</groupId>

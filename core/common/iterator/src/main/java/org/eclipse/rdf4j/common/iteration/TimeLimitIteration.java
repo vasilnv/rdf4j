@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.common.iteration;
 
@@ -17,6 +20,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Arjohn Kampman
  */
+@Deprecated(since = "4.1.0")
 public abstract class TimeLimitIteration<E, X extends Exception> extends IterationWrapper<E, X> {
 
 	private static final Timer timer = new Timer("TimeLimitIteration", true);
@@ -96,7 +100,7 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 		}
 	}
 
-	private final void checkInterrupted() throws X {
+	private void checkInterrupted() throws X {
 		if (isInterrupted.get()) {
 			try {
 				throwInterruptedException();
@@ -104,6 +108,9 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 				try {
 					close();
 				} catch (Exception e) {
+					if (e instanceof InterruptedException) {
+						Thread.currentThread().interrupt();
+					}
 					logger.warn("TimeLimitIteration timed out and failed to close successfully: ", e);
 				}
 			}
@@ -130,6 +137,9 @@ public abstract class TimeLimitIteration<E, X extends Exception> extends Iterati
 		try {
 			close();
 		} catch (Exception e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
 			logger.warn("TimeLimitIteration timed out and failed to close successfully: ", e);
 		}
 	}

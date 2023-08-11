@@ -1,10 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
- ******************************************************************************/
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.benchmark.rio;
 
@@ -47,7 +50,7 @@ import org.eclipse.rdf4j.rio.helpers.BinaryRDFWriterSettings;
  * <p>
  * Please note that the datasets from {@link RDFTestDataset} are fairly large files
  * </p>
- * 
+ *
  * @author Frens Jan Rumph
  */
 public class RDFSizeBenchmarks {
@@ -114,8 +117,9 @@ public class RDFSizeBenchmarks {
 		String fileName = path.getName();
 		RDFFormat inputFormat = Rio.getParserFormatForFileName(fileName)
 				.orElseThrow(() -> new IllegalArgumentException("No format available for " + fileName));
-		InputStream is = new BufferedInputStream(new FileInputStream(path));
-		reportSize(fileName, is, description, inputFormat, outputFormat, writerConfig);
+		try (InputStream is = new BufferedInputStream(new FileInputStream(path))) {
+			reportSize(fileName, is, description, inputFormat, outputFormat, writerConfig);
+		}
 	}
 
 	private static void reportSize(String dataset, InputStream is, String description, RDFFormat inputFormat,
@@ -135,11 +139,7 @@ public class RDFSizeBenchmarks {
 				.set(VERIFY_URI_SYNTAX, false));
 
 		Instant start = Instant.now();
-		try {
-			parser.parse(is);
-		} finally {
-			is.close();
-		}
+		parser.parse(is);
 		Instant end = Instant.now();
 		Duration duration = Duration.between(start, end);
 

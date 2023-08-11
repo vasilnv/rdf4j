@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.repository.sail;
 
@@ -97,6 +100,14 @@ public class SailRepositoryConnection extends AbstractRepositoryConnection imple
 		if (sailConnection instanceof FederatedServiceResolverClient) {
 			((FederatedServiceResolverClient) sailConnection).setFederatedServiceResolver(resolver);
 		}
+	}
+
+	@Override
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		if (sailConnection instanceof FederatedServiceResolverClient) {
+			return ((FederatedServiceResolverClient) sailConnection).getFederatedServiceResolver();
+		}
+		return null;
 	}
 
 	@Override
@@ -357,8 +368,8 @@ public class SailRepositoryConnection extends AbstractRepositoryConnection imple
 			Resource... contexts) throws RepositoryException, RDFHandlerException {
 		handler.startRDF();
 
-		try ( // Export namespace information
-				CloseableIteration<? extends Namespace, RepositoryException> nsIter = getNamespaces()) {
+		// Export namespace information
+		try (var nsIter = getNamespaces()) {
 			while (nsIter.hasNext()) {
 				Namespace ns = nsIter.next();
 				handler.handleNamespace(ns.getPrefix(), ns.getName());
@@ -366,9 +377,7 @@ public class SailRepositoryConnection extends AbstractRepositoryConnection imple
 		}
 
 		// Export statements
-
-		try (CloseableIteration<? extends Statement, RepositoryException> stIter = getStatements(subj, pred, obj,
-				includeInferred, contexts)) {
+		try (var stIter = getStatements(subj, pred, obj, includeInferred, contexts)) {
 			while (stIter.hasNext()) {
 				handler.handleStatement(stIter.next());
 			}

@@ -1,13 +1,21 @@
 /*******************************************************************************
  * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.rio.ndjsonld;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +23,9 @@ import java.util.List;
 import org.apache.commons.io.input.BOMInputStream;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.rio.*;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.jsonld.JSONLDParser;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -27,10 +37,10 @@ import com.github.jsonldjava.utils.JsonUtils;
  * format is inspired by Newline Delimited JSON format<a>http://ndjson.org/</a>. Even though each line is a separate
  * JSON-LD document, the whole document is treated as a single RDF document, having one single BNodes context to
  * preserve BNodes identifiers.
- * 
+ *
  * @author Desislava Hristova
  */
-public class NDJSONLDParser extends JSONLDParser implements RDFParser {
+public class NDJSONLDParser extends JSONLDParser {
 
 	/**
 	 * Default constructor
@@ -60,7 +70,8 @@ public class NDJSONLDParser extends JSONLDParser implements RDFParser {
 			String line;
 			while ((line = bufferedReader.readLine()) != null) {
 				if (!line.isEmpty()) {
-					JsonParser nextParser = factory.createParser(new ByteArrayInputStream(line.getBytes()));
+					JsonParser nextParser = factory
+							.createParser(new ByteArrayInputStream(line.getBytes(StandardCharsets.UTF_8)));
 					Object singleJSONLD = JsonUtils.fromJsonParser(nextParser);
 					if (singleJSONLD instanceof List) {
 						arrayOfJSONLD.addAll((List) singleJSONLD);

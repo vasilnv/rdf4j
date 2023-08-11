@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration;
@@ -11,10 +14,11 @@ package org.eclipse.rdf4j.common.iteration;
 import java.util.NoSuchElementException;
 
 /**
- * Abstract superclass for Iterations that wrap other Iterations. The abstract class <tt>IterationWrapper</tt> itself
- * provides default methods that forward method calls to the wrapped Iteration. Subclasses of <tt>IterationWrapper</tt>
- * should override some of these methods and may also provide additional methods and fields.
+ * Abstract superclass for Iterations that wrap other Iterations. The abstract class <var>IterationWrapper</var> itself
+ * provides default methods that forward method calls to the wrapped Iteration. Subclasses of
+ * <var>IterationWrapper</var> should override some of these methods and may also provide additional methods and fields.
  */
+@Deprecated(since = "4.1.0")
 public class IterationWrapper<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*-----------*
@@ -26,7 +30,7 @@ public class IterationWrapper<E, X extends Exception> extends AbstractCloseableI
 	 *
 	 * @deprecated This will be changed to private, possibly with an accessor in future. Do not rely on it.
 	 */
-	@Deprecated
+	@Deprecated(since = "4.1.0")
 	protected final Iteration<? extends E, ? extends X> wrappedIter;
 
 	/*--------------*
@@ -36,7 +40,7 @@ public class IterationWrapper<E, X extends Exception> extends AbstractCloseableI
 	/**
 	 * Creates a new IterationWrapper that operates on the supplied Iteration.
 	 *
-	 * @param iter The wrapped Iteration for this <tt>IterationWrapper</tt>, must not be <tt>null</tt>.
+	 * @param iter The wrapped Iteration for this <var>IterationWrapper</var>, must not be <var>null</var>.
 	 */
 	protected IterationWrapper(Iteration<? extends E, ? extends X> iter) {
 		assert iter != null;
@@ -50,7 +54,7 @@ public class IterationWrapper<E, X extends Exception> extends AbstractCloseableI
 	/**
 	 * Checks whether the wrapped Iteration contains more elements, closing this Iteration when this is not the case.
 	 *
-	 * @return <tt>true</tt> if the wrapped Iteration contains more elements, <tt>false</tt> otherwise.
+	 * @return <var>true</var> if the wrapped Iteration contains more elements, <var>false</var> otherwise.
 	 */
 	@Override
 	public boolean hasNext() throws X {
@@ -91,7 +95,7 @@ public class IterationWrapper<E, X extends Exception> extends AbstractCloseableI
 	/**
 	 * Removes the last element that has been returned from the wrapped Iteration.
 	 *
-	 * @throws UnsupportedOperationException If the wrapped Iteration does not support the <tt>remove</tt> operation.
+	 * @throws UnsupportedOperationException If the wrapped Iteration does not support the <var>remove</var> operation.
 	 * @throws IllegalStateException         if the Iteration has been closed, or if {@link #next} has not yet been
 	 *                                       called, or {@link #remove} has already been called after the last call to
 	 *                                       {@link #next}.

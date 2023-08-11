@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.eclipse.rdf4j</groupId>
 		<artifactId>rdf4j</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
+		<version>4.3.6-SNAPSHOT</version>
 	</parent>
 	<artifactId>rdf4j-core</artifactId>
 	<packaging>pom</packaging>
@@ -26,8 +26,9 @@
 		<module>spin</module>
 		<module>client</module>
 		<module>storage</module>
+		<module>collection-factory</module>
 	</modules>
-	<name>RDF4J Core</name>
+	<name>RDF4J: Core</name>
 	<description>Core modules for RDF4J</description>
 	<profiles>
 		<profile>
@@ -76,18 +77,58 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<!-- build jmh benchmark jar files in package phase -->
+			<id>benchmarks</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>${project.groupId}</groupId>
+								<artifactId>rdf4j-assembly-descriptors</artifactId>
+								<version>${project.version}</version>
+							</dependency>
+						</dependencies>
+						<configuration>
+							<finalName>jmh</finalName>
+							<descriptorRefs>
+								<descriptorRef>benchmark</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+						<executions>
+							<execution>
+								<id>benchmark-jar</id>
+								<phase>package</phase>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<archive>
+										<manifest>
+											<mainClass>org.openjdk.jmh.Main</mainClass>
+										</manifest>
+									</archive>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 	<dependencies>
 		<!-- shared test dependencies -->
 		<!-- Testing: JUnit -->
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.junit.vintage</groupId>
-			<artifactId>junit-vintage-engine</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -101,47 +142,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<dependencies>
-						<dependency>
-							<groupId>${project.groupId}</groupId>
-							<artifactId>rdf4j-assembly-descriptors</artifactId>
-							<version>${project.version}</version>
-						</dependency>
-					</dependencies>
-					<configuration>
-						<finalName>jmh</finalName>
-						<descriptorRefs>
-							<descriptorRef>benchmark</descriptorRef>
-						</descriptorRefs>
-					</configuration>
-					<executions>
-						<execution>
-							<id>benchmark-jar</id>
-							<phase>package</phase>
-							<goals>
-								<goal>single</goal>
-							</goals>
-							<configuration>
-								<archive>
-									<manifest>
-										<mainClass>org.openjdk.jmh.Main</mainClass>
-									</manifest>
-								</archive>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
 </project>

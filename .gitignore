@@ -28,6 +28,9 @@ dependency-reduced-pom.xml
 *.ipr
 *.iws
 
+# Hugo
+.hugo_build.lock
+
 # Mac nonsense
 .DS_Store
 
@@ -42,3 +45,6 @@ tempElasticsearchDownload
 cache.db
 formatter-maven-cache.properties
 compliance/*/overlays
+docker/ignore
+/core/queryparser/sparql/JavaCC/javacc/
+/scripts/temp/

@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration;
@@ -11,7 +14,10 @@ package org.eclipse.rdf4j.common.iteration;
 /**
  * Base class for {@link CloseableIteration}s offering common functionality. This class keeps track of whether the
  * iteration has been closed and handles multiple calls to {@link #close()} by ignoring all but the first call.
+ * <p>
+ * Instances of this class is not safe to be accessed from multiple threads at the same time.
  */
+@Deprecated(since = "4.1.0")
 public abstract class AbstractCloseableIteration<E, X extends Exception> implements CloseableIteration<E, X> {
 
 	/*-----------*
@@ -21,8 +27,7 @@ public abstract class AbstractCloseableIteration<E, X extends Exception> impleme
 	/**
 	 * Flag indicating whether this iteration has been closed.
 	 */
-	private volatile boolean closed = false;
-	private final Object MONITOR_FOR_CLOSED = new Object();
+	private boolean closed = false;
 
 	/*---------*
 	 * Methods *
@@ -31,7 +36,7 @@ public abstract class AbstractCloseableIteration<E, X extends Exception> impleme
 	/**
 	 * Checks whether this CloseableIteration has been closed.
 	 *
-	 * @return <tt>true</tt> if the CloseableIteration has been closed, <tt>false</tt> otherwise.
+	 * @return <var>true</var> if the CloseableIteration has been closed, <var>false</var> otherwise.
 	 */
 	public final boolean isClosed() {
 		return closed;
@@ -42,26 +47,9 @@ public abstract class AbstractCloseableIteration<E, X extends Exception> impleme
 	 */
 	@Override
 	public final void close() throws X {
-		// this code is used because AtomicBoolean is slow for our usecase
 		if (!closed) {
-
-			// closedInThisCall will be true if we actually end up setting closed = true within this method call
-			boolean closedInThisCall = false;
-
-			// We synchronize here on _MONITOR_FOR_CLOSED_ so that we eliminate any race conditions then we read the
-			// variable again, since it could have been modified since last we checked it. Do not synchronize on _this_
-			// since it causes contention with subclasses that might also use synchronization. See issue
-			// https://github.com/eclipse/rdf4j/issues/2774.
-			synchronized (MONITOR_FOR_CLOSED) {
-				if (!closed) {
-					closed = true;
-					closedInThisCall = true;
-				}
-			}
-
-			if (closedInThisCall) {
-				handleClose();
-			}
+			closed = true;
+			handleClose();
 		}
 	}
 
